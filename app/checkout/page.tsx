@@ -26,7 +26,7 @@ interface CartItem {
     price: number;
   };
   quantity: number;
-  price: number;
+  // price is derived from productId.price
 }
 
 export default function CheckoutPage() {
@@ -59,7 +59,7 @@ export default function CheckoutPage() {
 
   const fetchCart = async () => {
     try {
-      const res = await fetch('/api/cart');
+      const res = await fetch(`/api/cart?userId=${user?._id}`);
       if (res.ok) {
         const data = await res.json();
         setCart(data.items || []);
@@ -70,7 +70,11 @@ export default function CheckoutPage() {
   };
 
   const calculateTotals = () => {
-    const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const subtotal = cart.reduce((sum, item) => {
+      const unitPrice = Number(item.productId?.price) || 0;
+      const qty = Number(item.quantity) || 0;
+      return sum + unitPrice * qty;
+    }, 0);
     const shippingAmount = subtotal >= 500 ? 0 : 50;
     const taxAmount = Math.round(subtotal * 0.05);
     const totalAmount = subtotal + shippingAmount + taxAmount;
@@ -113,6 +117,10 @@ export default function CheckoutPage() {
           title: 'Order Placed!',
           description: 'Your order has been placed successfully.',
         });
+        setCart([]);
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new Event('cart:updated'));
+        }
         router.push(`/order-success?orderId=${data.orderId}`);
       } else {
         const options = {
@@ -142,6 +150,10 @@ export default function CheckoutPage() {
                   title: 'Payment Successful!',
                   description: 'Your order has been confirmed.',
                 });
+                setCart([]);
+                if (typeof window !== 'undefined') {
+                  window.dispatchEvent(new Event('cart:updated'));
+                }
                 router.push(`/order-success?orderId=${data.orderId}`);
               } else {
                 throw new Error(verifyData.error);
@@ -330,7 +342,7 @@ export default function CheckoutPage() {
                           <p className="text-sm font-medium truncate">{item.productId.name}</p>
                           <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
                         </div>
-                        <p className="text-sm font-semibold">₹{item.price * item.quantity}</p>
+                        <p className="text-sm font-semibold">₹{(Number(item.productId?.price) || 0) * (Number(item.quantity) || 0)}</p>
                       </div>
                     ))}
                   </div>

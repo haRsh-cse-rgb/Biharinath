@@ -55,7 +55,7 @@ export default function OrderSuccessPage() {
 
   const fetchOrderDetails = async () => {
     try {
-      const res = await fetch(`/api/orders/${orderId}`);
+      const res = await fetch(`/api/orders/${encodeURIComponent(orderId as string)}`);
       if (res.ok) {
         const data = await res.json();
         setOrder(data);

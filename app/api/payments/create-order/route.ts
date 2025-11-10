@@ -41,15 +41,17 @@ export async function POST(request: Request) {
 
     let subtotal = 0;
     const orderItems = cart.items.map((item: any) => {
-      const itemTotal = item.price * item.quantity;
+      const unitPrice = Number(item.productId?.price) || 0;
+      const quantity = Number(item.quantity) || 0;
+      const itemTotal = unitPrice * quantity;
       subtotal += itemTotal;
 
       return {
         productId: item.productId._id,
         productName: item.productId.name,
         productImage: item.productId.images?.[0] || '',
-        unitPrice: item.price,
-        quantity: item.quantity,
+        unitPrice,
+        quantity,
         totalPrice: itemTotal,
       };
     });

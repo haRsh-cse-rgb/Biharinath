@@ -37,16 +37,47 @@ export default function CartPage() {
     }
   };
 
-  const updateQuantity = (id: string, delta: number) => {
-    setCartItems(items =>
-      items.map(item =>
-        item.id === id ? { ...item, quantity: Math.max(1, item.quantity + delta) } : item
-      )
-    );
+  const updateQuantity = async (itemId: string, delta: number) => {
+    const item = cartItems.find(i => i._id === itemId);
+    if (!item || !user?._id) return;
+    const nextQty = Math.max(1, (item.quantity || 1) + delta);
+    try {
+      const res = await fetch('/api/cart', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user._id,
+          productId: item.productId?._id || item.productId,
+          quantity: nextQty,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setCartItems(data.items || []);
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new Event('cart:updated'));
+        }
+      }
+    } catch (e) {
+      // ignore
+    }
   };
 
-  const removeItem = (id: string) => {
-    setCartItems(items => items.filter(item => item.id !== id));
+  const removeItem = async (itemId: string) => {
+    const item = cartItems.find(i => i._id === itemId);
+    if (!item || !user?._id) return;
+    try {
+      const res = await fetch(`/api/cart?userId=${user._id}&productId=${item.productId?._id || item.productId}`, { method: 'DELETE' });
+      if (res.ok) {
+        const data = await res.json();
+        setCartItems(data.items || []);
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new Event('cart:updated'));
+        }
+      }
+    } catch (e) {
+      // ignore
+    }
   };
 
   const subtotal = cartItems.reduce((sum, item) => sum + (item.productId?.price || 0) * item.quantity, 0);
@@ -82,9 +113,10 @@ export default function CartPage() {
                   <div key={item._id} className="flex items-center space-x-4 py-4 border-b last:border-0">
                     <div className="relative h-24 w-24 flex-shrink-0">
                       <Image 
-                        src={item.productId?.image || '/placeholder-image.jpg'} 
+                        src={item.productId?.images?.[0] || '/placeholder-image.jpg'} 
                         alt={item.productId?.name || 'Product'} 
                         fill 
+                        unoptimized
                         className="object-cover rounded" 
                       />
                     </div>

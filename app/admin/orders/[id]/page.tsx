@@ -6,10 +6,13 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, ShoppingCart, User, MapPin, CreditCard } from 'lucide-react';
 import Link from 'next/link';
+import { useToast } from '@/hooks/use-toast';
 
 export default function OrderDetailsPage({ params }: { params: { id: string } }) {
   const [order, setOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchOrderDetails = async () => {
@@ -76,12 +79,15 @@ export default function OrderDetailsPage({ params }: { params: { id: string } })
               <CardContent>
                 <ul className="divide-y divide-gray-200">
                   {order.items && order.items.map((item: any) => (
-                    <li key={item.productId._id} className="py-4 flex justify-between items-center">
+                    <li key={item.productId?._id || item.productName} className="py-4 flex justify-between items-center">
                       <div>
-                        <p className="font-semibold">{item.productId.name}</p>
+                        <p className="font-semibold">{item.productName || item.productId?.name}</p>
                         <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
                       </div>
-                      <p className="font-semibold">₹{item.price}</p>
+                      <div className="text-right">
+                        <p className="font-semibold">₹{item.totalPrice ?? (item.unitPrice * item.quantity)}</p>
+                        <p className="text-xs text-gray-500">₹{item.unitPrice} x {item.quantity}</p>
+                      </div>
                     </li>
                   ))}
                 </ul>
@@ -93,8 +99,9 @@ export default function OrderDetailsPage({ params }: { params: { id: string } })
                 <CardTitle className="flex items-center"><User className="mr-2 h-5 w-5" /> Customer</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <p><strong>Name:</strong> {order.shippingAddress?.fullName || 'N/A'}</p>
-                <p><strong>Email:</strong> {order.user?.email}</p>
+                <p><strong>Name:</strong> {order.shippingAddress?.fullName || order.userId?.fullName || 'N/A'}</p>
+                <p><strong>Email:</strong> {order.userId?.email || 'N/A'}</p>
+                {order.userId?.phone && <p><strong>Phone:</strong> {order.userId.phone}</p>}
               </CardContent>
             </Card>
 
@@ -112,11 +119,71 @@ export default function OrderDetailsPage({ params }: { params: { id: string } })
 
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center"><CreditCard className="mr-2 h-5 w-5" /> Payment</CardTitle>
+                <CardTitle className="flex items-center"><CreditCard className="mr-2 h-5 w-5" /> Payment & Status</CardTitle>
               </CardHeader>
-              <CardContent>
-                <p><strong>Payment Method:</strong> {order.paymentMethod}</p>
-                <p><strong>Payment Status:</strong> <Badge>{order.paymentStatus}</Badge></p>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">Payment Method</p>
+                    <p className="font-medium capitalize">{order.paymentMethod}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">Payment Status</p>
+                    <select
+                      className="w-full border rounded px-3 py-2"
+                      value={order.paymentStatus}
+                      onChange={(e) => setOrder({ ...order, paymentStatus: e.target.value })}
+                    >
+                      <option value="pending">pending</option>
+                      <option value="completed">completed</option>
+                      <option value="failed">failed</option>
+                      <option value="refunded">refunded</option>
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600 mb-1">Order Status</p>
+                  <select
+                    className="w-full border rounded px-3 py-2"
+                    value={order.status}
+                    onChange={(e) => setOrder({ ...order, status: e.target.value })}
+                  >
+                    <option value="pending">pending</option>
+                    <option value="processing">processing</option>
+                    <option value="shipped">shipped</option>
+                    <option value="out_for_delivery">out_for_delivery</option>
+                    <option value="delivered">delivered</option>
+                    <option value="cancelled">cancelled</option>
+                    <option value="returned">returned</option>
+                  </select>
+                </div>
+                <div className="flex justify-end">
+                  <Button
+                    className="bg-green-600 hover:bg-green-700"
+                    disabled={saving}
+                    onClick={async () => {
+                      setSaving(true);
+                      try {
+                        const res = await fetch(`/api/orders/${params.id}`, {
+                          method: 'PATCH',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ status: order.status, paymentStatus: order.paymentStatus }),
+                        });
+                        if (res.ok) {
+                          const updated = await res.json();
+                          setOrder(updated);
+                          toast({ title: 'Order updated' });
+                        } else {
+                          toast({ title: 'Failed to update order', variant: 'destructive' });
+                        }
+                      } finally {
+                        setSaving(false);
+                      }
+                    }}
+                  >
+                    {saving ? 'Saving...' : 'Save Changes'}
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </div>

@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { ShoppingCart, User, Search, Menu, X, LogOut, Package, MapPin, Settings, Leaf } from 'lucide-react';
+import { ShoppingCart, User, Search, Menu, X, LogOut, Package, MapPin, Settings, Leaf, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -28,6 +28,33 @@ export function Navbar() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    const loadCartCount = async () => {
+      if (!user?._id) {
+        setCartItemsCount(0);
+        return;
+      }
+      try {
+        const res = await fetch(`/api/cart?userId=${user._id}`);
+        if (res.ok) {
+          const data = await res.json();
+          const count = (data?.items || []).reduce((sum: number, it: any) => sum + (it.quantity || 0), 0);
+          setCartItemsCount(count);
+        }
+      } catch {
+        // ignore count errors in navbar
+      }
+    };
+
+    loadCartCount();
+
+    const onCartUpdated = () => loadCartCount();
+    window.addEventListener('cart:updated', onCartUpdated as any);
+    return () => {
+      window.removeEventListener('cart:updated', onCartUpdated as any);
+    };
+  }, [user?._id]);
 
   return (
     <nav
@@ -114,6 +141,12 @@ export function Navbar() {
                     <Link href="/orders" className="cursor-pointer">
                       <Package className="mr-2 h-4 w-4" />
                       Orders
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/wishlist" className="cursor-pointer">
+                      <Heart className="mr-2 h-4 w-4" />
+                      Wishlist
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>

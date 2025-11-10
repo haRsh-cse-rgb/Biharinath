@@ -65,3 +65,32 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: 'Failed to remove item' }, { status: 500 });
   }
 }
+
+export async function PATCH(request: Request) {
+  try {
+    await connectToDB();
+    const body = await request.json();
+    const { userId, productId, quantity } = body as { userId: string; productId: string; quantity: number };
+
+    if (!userId || !productId || typeof quantity !== 'number') {
+      return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
+    }
+
+    const cart = await Cart.findOne({ userId });
+    if (!cart) {
+      return NextResponse.json({ error: 'Cart not found' }, { status: 404 });
+    }
+
+    const itemIndex = cart.items.findIndex((item: any) => item.productId.toString() === productId);
+    if (itemIndex === -1) {
+      return NextResponse.json({ error: 'Item not found' }, { status: 404 });
+    }
+
+    cart.items[itemIndex].quantity = Math.max(1, quantity);
+    await cart.save();
+    const populated = await Cart.findOne({ userId }).populate('items.productId');
+    return NextResponse.json(populated);
+  } catch (error) {
+    return NextResponse.json({ error: 'Failed to update quantity' }, { status: 500 });
+  }
+}

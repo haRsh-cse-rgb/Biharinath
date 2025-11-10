@@ -9,7 +9,9 @@ export async function GET(request: Request) {
     const userId = searchParams.get('userId');
 
     const query = userId ? { userId } : {};
-    const orders = await Order.find(query).sort({ createdAt: -1 });
+    const orders = await Order.find(query)
+      .populate('userId', 'fullName email phone')
+      .sort({ createdAt: -1 });
     return NextResponse.json(orders);
   } catch (error) {
     return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 });

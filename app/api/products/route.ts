@@ -10,6 +10,13 @@ export async function GET(request: Request) {
     const category = searchParams.get('category');
     const search = searchParams.get('search');
     const featured = searchParams.get('featured');
+    const slug = searchParams.get('slug');
+
+    // Fast path for slug uniqueness checks
+    if (slug) {
+      const products = await Product.find({ slug }).select('_id slug');
+      return NextResponse.json(products);
+    }
 
     let query: any = { isActive: true };
 
@@ -17,12 +24,7 @@ export async function GET(request: Request) {
     if (featured === 'true') query.isFeatured = true;
     if (search) query.name = { $regex: search, $options: 'i' };
 
-    console.log('Fetching products with query:', query);
     const products = await Product.find(query).select('_id name slug description price stockQuantity sku images').sort({ createdAt: -1 });
-    console.log('Found products:', products.length);
-    
-    // Skip population for now to avoid schema issues
-    console.log('Returning products without population:', products);
     return NextResponse.json(products);
   } catch (error) {
     console.error('GET /api/products error:', error);

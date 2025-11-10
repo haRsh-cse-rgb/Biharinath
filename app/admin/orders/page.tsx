@@ -57,22 +57,34 @@ export default function AdminOrdersPage() {
             {orders.map((order: any) => (
               <Card key={order._id}>
                 <CardContent className="p-6">
-                  <div className="flex justify-between items-center">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <h3 className="font-semibold">Order #{order.orderNumber}</h3>
-                      <p className="text-sm text-gray-600">{order.shippingAddress.fullName}</p>
-                      <p className="text-sm text-gray-500">{new Date(order.createdAt).toLocaleDateString()}</p>
+                      <p className="text-sm text-gray-600">{order.shippingAddress?.fullName || 'N/A'}</p>
+                      {order.userId?.email && (
+                        <p className="text-xs text-gray-500">{order.userId.email}</p>
+                      )}
+                      <p className="text-sm text-gray-500">
+                        {new Date(order.createdAt).toLocaleDateString('en-IN')}
+                      </p>
                     </div>
                     <div className="text-right">
                       <p className="font-bold text-lg">₹{order.totalAmount}</p>
                       <Badge>{order.status}</Badge>
                     </div>
-                    <Link href={`/admin/orders/${order._id}`}>
-                      <Button variant="outline" size="sm">
-                        <Eye className="mr-2 h-4 w-4" />
-                        View Details
-                      </Button>
-                    </Link>
+                    <div className="flex gap-2">
+                      <Link href={`/admin/orders/${order._id}`}>
+                        <Button variant="outline" size="sm">
+                          <Eye className="mr-2 h-4 w-4" />
+                          View Details
+                        </Button>
+                      </Link>
+                      <Link href={`/admin/orders/${order._id}/invoice`} target="_blank">
+                        <Button variant="outline" size="sm">
+                          Print Invoice
+                        </Button>
+                      </Link>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

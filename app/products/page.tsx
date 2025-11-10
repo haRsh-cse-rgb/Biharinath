@@ -179,6 +179,9 @@ export default function ProductsPage() {
                             title: "Added to cart",
                             description: `${product.name} has been added to your cart`,
                           });
+                        if (typeof window !== 'undefined') {
+                          window.dispatchEvent(new Event('cart:updated'));
+                        }
                         } else {
                           toast({
                             title: "Error",

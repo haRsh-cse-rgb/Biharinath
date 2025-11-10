@@ -17,7 +17,7 @@ import { Plus, Edit, Trash2, Search, ArrowLeft, X, Upload, Loader2 } from 'lucid
 import Link from 'next/link';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
-import { uploadImage } from '@/lib/supabase';
+// Cloudinary uploads handled via /api/upload
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<any[]>([]);
@@ -48,17 +48,14 @@ export default function AdminProductsPage() {
     try {
       const res = await fetch('/api/products');
       const data = await res.json();
-      console.log('Products API response:', data);
-      
+
       // Check if data is an array, if not use empty array
       if (Array.isArray(data)) {
         setProducts(data);
       } else {
-        console.error('Products API returned non-array data:', data);
         setProducts([]);
       }
     } catch (error) {
-      console.error('Failed to fetch products:', error);
       setProducts([]);
     }
   };
@@ -230,10 +227,17 @@ export default function AdminProductsPage() {
 
     setUploading(true);
     try {
-      const uploadPromises = Array.from(files).map(file => uploadImage(file, 'products'));
+      const uploadPromises = Array.from(files).map(async (file) => {
+        const fd = new FormData();
+        fd.append('file', file);
+        const res = await fetch('/api/upload', { method: 'POST', body: fd });
+        if (!res.ok) return null;
+        const data = await res.json();
+        return data.url as string;
+      });
       const uploadedUrls = await Promise.all(uploadPromises);
 
-      const validUrls = uploadedUrls.filter((url): url is string => url !== null);
+      const validUrls = uploadedUrls.filter((url): url is string => !!url);
 
       if (validUrls.length > 0) {
         setFormData(prev => ({
@@ -246,7 +250,6 @@ export default function AdminProductsPage() {
         toast({ title: 'Failed to upload images', variant: 'destructive' });
       }
     } catch (error) {
-      console.error('Upload error:', error);
       toast({ title: 'Error uploading images', variant: 'destructive' });
     } finally {
       setUploading(false);

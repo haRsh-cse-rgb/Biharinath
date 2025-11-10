@@ -56,8 +56,11 @@ export default function ProductDetailPage() {
       if (response.ok) {
         toast({
           title: "Added to cart",
-          description: `${quantity} ${product.unit} of ${product.name} added to cart`,
+          description: `${product.name} (x${quantity}) added to cart`,
         });
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new Event('cart:updated'));
+        }
       } else {
         toast({
           title: "Error",
@@ -71,6 +74,63 @@ export default function ProductDetailPage() {
         description: "Failed to add item to cart",
         variant: "destructive"
       });
+    }
+  };
+
+  const [wishlisted, setWishlisted] = useState(false);
+  const [wishBusy, setWishBusy] = useState(false);
+
+  useEffect(() => {
+    const loadWishlistState = async () => {
+      if (!user?._id || !product?._id) {
+        setWishlisted(false);
+        return;
+      }
+      try {
+        const res = await fetch(`/api/wishlist?userId=${user._id}`);
+        if (res.ok) {
+          const data = await res.json();
+          const ids = (data?.items || []).map((it: any) => (it.productId?._id || it.productId)?.toString());
+          setWishlisted(ids.includes(product._id));
+        }
+      } catch {
+        // ignore
+      }
+    };
+    loadWishlistState();
+  }, [user?._id, product?._id]);
+
+  const toggleWishlist = async () => {
+    if (!user) {
+      toast({
+        title: "Please login",
+        description: "You need to login to use wishlist",
+        variant: "destructive"
+      });
+      return;
+    }
+    if (wishBusy) return;
+    try {
+      setWishBusy(true);
+      const res = await fetch('/api/wishlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user._id, productId: product._id }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const ids = (data?.items || []).map((it: any) => (it.productId?._id || it.productId)?.toString());
+        const isNowWishlisted = ids.includes(product._id);
+        setWishlisted(isNowWishlisted);
+        toast({
+          title: isNowWishlisted ? 'Added to Wishlist' : 'Removed from Wishlist',
+          description: product.name,
+        });
+      }
+    } catch {
+      // ignore
+    } finally {
+      setWishBusy(false);
     }
   };
 
@@ -189,8 +249,8 @@ export default function ProductDetailPage() {
                 <ShoppingCart className="mr-2 h-5 w-5" />
                 {product.stockQuantity === 0 ? 'Out of Stock' : 'Add to Cart'}
               </Button>
-              <Button size="lg" variant="outline" className="border-green-600 text-green-600">
-                <Heart className="h-5 w-5" />
+              <Button size="lg" variant="outline" className={`border-green-600 ${wishlisted ? 'text-red-600' : 'text-green-600'}`} onClick={toggleWishlist} disabled={wishBusy}>
+                <Heart className={`h-5 w-5 ${wishlisted ? 'fill-red-600 text-red-600' : ''}`} />
               </Button>
             </div>
 
