@@ -307,3 +307,128 @@ export async function sendBookingRejectionEmail(booking: any, email: string, ful
     return false;
   }
 }
+
+export async function sendReviewConfirmationEmail(
+  review: any,
+  userEmail: string,
+  userName: string,
+  productName: string
+) {
+  try {
+    // Get reaction message based on rating
+    const getReactionMessage = (rating: number) => {
+      switch (rating) {
+        case 5:
+          return {
+            title: 'Thank You for Your 5-Star Review!',
+            message: "We're thrilled that you loved our product! Your positive feedback means the world to us and helps other customers discover quality organic products.",
+            emoji: '🌟',
+          };
+        case 4:
+          return {
+            title: 'Thank You for Your 4-Star Review!',
+            message: "We're glad you enjoyed our product! We're always working to improve, and your feedback helps us serve you better.",
+            emoji: '😊',
+          };
+        case 3:
+          return {
+            title: 'Thank You for Your Review',
+            message: "Thank you for taking the time to review our product. We appreciate your honest feedback and will use it to improve our products and services.",
+            emoji: '🙂',
+          };
+        case 2:
+          return {
+            title: 'We Value Your Feedback',
+            message: "We're sorry to hear that your experience wasn't as expected. Your feedback is important to us, and we're committed to improving. Please don't hesitate to contact our customer service team if you need any assistance.",
+            emoji: '😔',
+          };
+        case 1:
+          return {
+            title: 'We Apologize for Your Experience',
+            message: "We sincerely apologize that we didn't meet your expectations. Your feedback is crucial to us, and we take it seriously. Our team would like to make things right. Please contact us at biharinath.org.farm@gmail.com so we can address your concerns.",
+            emoji: '😢',
+          };
+        default:
+          return {
+            title: 'Thank You for Your Review',
+            message: "Thank you for taking the time to review our product. We appreciate your feedback!",
+            emoji: '🙏',
+          };
+      }
+    };
+
+    const reaction = getReactionMessage(review.rating);
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER || 'biharinath.org.farm@gmail.com',
+      to: userEmail,
+      subject: `${reaction.emoji} ${reaction.title} - Biharinath Organic Farms`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #16a34a; text-align: center;">${reaction.emoji} ${reaction.title}</h2>
+          <p>Dear ${userName},</p>
+          <p>${reaction.message}</p>
+          
+          <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="color: #16a34a; margin-top: 0;">Your Review</h3>
+            <div style="margin-bottom: 15px;">
+              <strong>Product:</strong> ${productName}
+            </div>
+            <div style="margin-bottom: 15px;">
+              <strong>Rating:</strong> 
+              <span style="color: #fbbf24;">
+                ${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}
+              </span>
+              (${review.rating} out of 5)
+            </div>
+            ${review.title ? `
+              <div style="margin-bottom: 15px;">
+                <strong>Title:</strong> ${review.title}
+              </div>
+            ` : ''}
+            <div style="margin-bottom: 15px;">
+              <strong>Your Comment:</strong>
+              <p style="background-color: white; padding: 10px; border-radius: 4px; margin-top: 5px;">
+                ${review.comment}
+              </p>
+            </div>
+            ${review.images && review.images.length > 0 ? `
+              <div style="margin-top: 15px;">
+                <strong>Images Uploaded:</strong> ${review.images.length} image(s)
+              </div>
+            ` : ''}
+            <div style="margin-top: 15px; font-size: 12px; color: #6b7280;">
+              Review submitted on ${new Date(review.createdAt).toLocaleDateString('en-IN', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              })}
+            </div>
+          </div>
+
+          ${review.rating <= 2 ? `
+            <div style="background-color: #fef3c7; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b;">
+              <p style="margin: 0;"><strong>Need Help?</strong></p>
+              <p style="margin: 5px 0 0 0;">If you have any concerns or would like to discuss your experience, please contact us at:</p>
+              <p style="margin: 5px 0 0 0;">
+                <strong>Email:</strong> biharinath.org.farm@gmail.com<br>
+                We're here to help and make things right!
+              </p>
+            </div>
+          ` : ''}
+
+          <p style="margin-top: 30px;">Thank you for being a valued customer!</p>
+          <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">Best regards,<br>Biharinath Organic Farms Team</p>
+        </div>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+    return true;
+  } catch (error) {
+    console.error('Email sending error:', error);
+    return false;
+  }
+}

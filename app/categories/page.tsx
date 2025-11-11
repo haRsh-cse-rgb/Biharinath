@@ -45,7 +45,11 @@ export default function CategoriesPage() {
 
           categoriesData.forEach((cat: Category) => {
             counts[cat._id] = productsData.filter(
-              (product: any) => product.category?._id === cat._id || product.category === cat._id
+              (product: any) => 
+                product.categoryId?.toString() === cat._id || 
+                product.categoryId === cat._id ||
+                product.category?._id?.toString() === cat._id ||
+                product.category === cat._id
             ).length;
           });
 
@@ -117,9 +121,9 @@ export default function CategoriesPage() {
                       <h2 className="text-2xl font-bold text-white mb-1">
                         {category.name}
                       </h2>
-                      <p className="text-sm text-white/90">
+                      {/* <p className="text-sm text-white/90">
                         {productCounts[category._id] || 0} products available
-                      </p>
+                      </p> */}
                     </div>
                   </div>
 

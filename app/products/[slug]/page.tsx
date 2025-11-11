@@ -9,6 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ShoppingCart, Heart, Truck, Shield, Package } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { ProductReviews } from '@/components/products/ProductReviews';
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -304,6 +305,9 @@ export default function ProductDetailPage() {
             </CardContent>
           </Card>
         )}
+
+        {/* Reviews Section */}
+        {product._id && <ProductReviews productId={product._id} />}
       </div>
     </div>
   );

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { ProductCard } from '@/components/products/ProductCard';
@@ -169,9 +170,22 @@ export default function Home() {
               >
                 <Link href={`/categories/${category.slug}`}>
                   <div className="relative h-64 rounded-lg overflow-hidden group cursor-pointer">
-                    <div className="absolute inset-0 bg-gradient-to-br from-green-500 to-green-700 group-hover:scale-110 transition-transform duration-500"></div>
+                    {category.image ? (
+                      <>
+                        <Image
+                          src={category.image}
+                          alt={category.name}
+                          fill
+                          className="object-cover group-hover:scale-110 transition-transform duration-500"
+                          unoptimized
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
+                      </>
+                    ) : (
+                      <div className="absolute inset-0 bg-gradient-to-br from-green-500 to-green-700 group-hover:scale-110 transition-transform duration-500"></div>
+                    )}
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <h3 className="text-3xl font-bold text-white">{category.name}</h3>
+                      <h3 className="text-3xl font-bold text-white drop-shadow-lg">{category.name}</h3>
                     </div>
                   </div>
                 </Link>

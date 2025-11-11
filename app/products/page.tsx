@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -12,9 +13,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 
-export default function ProductsPage() {
+function ProductsContent() {
   const { toast } = useToast();
   const { user } = useAuth();
+  const searchParams = useSearchParams();
   const [products, setProducts] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -22,9 +24,26 @@ export default function ProductsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Get search query from URL
+    const searchQuery = searchParams.get('search');
+    if (searchQuery) {
+      setSearchTerm(searchQuery);
+    }
+    
+    // Get category from URL
+    const categoryQuery = searchParams.get('category');
+    if (categoryQuery) {
+      setSelectedCategory(categoryQuery);
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
     fetchCategories();
+  }, []);
+
+  useEffect(() => {
     fetchProducts();
-  }, [selectedCategory]);
+  }, [selectedCategory, searchTerm]);
 
   const fetchCategories = async () => {
     const res = await fetch('/api/categories');
@@ -36,6 +55,9 @@ export default function ProductsPage() {
     setLoading(true);
     let url = '/api/products?';
     if (selectedCategory !== 'all') url += `category=${selectedCategory}`;
+    if (searchTerm.trim()) {
+      url += (selectedCategory !== 'all' ? '&' : '') + `search=${encodeURIComponent(searchTerm.trim())}`;
+    }
 
     const res = await fetch(url);
     const data = await res.json();
@@ -43,9 +65,8 @@ export default function ProductsPage() {
     setLoading(false);
   };
 
-  const filteredProducts = products.filter(product =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Products are already filtered by the API based on searchTerm and selectedCategory
+  const filteredProducts = products;
 
   return (
     <div className="min-h-screen bg-gray-50 pt-24 pb-12">
@@ -214,5 +235,20 @@ export default function ProductsPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function ProductsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 pt-24 pb-12 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+          <p className="mt-4 text-gray-600">Loading products...</p>
+        </div>
+      </div>
+    }>
+      <ProductsContent />
+    </Suspense>
   );
 }

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { ShoppingCart, User, Search, Menu, X, LogOut, Package, MapPin, Settings, Leaf, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -17,8 +18,11 @@ import { Badge } from '@/components/ui/badge';
 
 export function Navbar() {
   const { user, signOut, isAdmin } = useAuth();
+  const router = useRouter();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
   const [cartItemsCount, setCartItemsCount] = useState(0);
 
   useEffect(() => {
@@ -56,6 +60,15 @@ export function Navbar() {
     };
   }, [user?._id]);
 
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      router.push(`/products?search=${encodeURIComponent(searchTerm.trim())}`);
+      setSearchTerm('');
+      setIsSearchOpen(false);
+    }
+  };
+
   return (
     <nav
       className="fixed top-0 left-0 right-0 z-50 bg-green-700 shadow-md"
@@ -92,13 +105,47 @@ export function Navbar() {
           </div>
 
           <div className="flex items-center space-x-2 md:space-x-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-white hover:text-green-200 hover:bg-green-600"
-            >
-              <Search className="h-5 w-5" />
-            </Button>
+            {isSearchOpen ? (
+              <form onSubmit={handleSearch} className="flex items-center gap-2">
+                <Input
+                  type="text"
+                  placeholder="Search products..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-48 md:w-64 bg-white text-gray-900"
+                  autoFocus
+                />
+                <Button
+                  type="submit"
+                  variant="ghost"
+                  size="icon"
+                  className="text-white hover:text-green-200 hover:bg-green-600"
+                >
+                  <Search className="h-5 w-5" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="text-white hover:text-green-200 hover:bg-green-600"
+                  onClick={() => {
+                    setIsSearchOpen(false);
+                    setSearchTerm('');
+                  }}
+                >
+                  <X className="h-5 w-5" />
+                </Button>
+              </form>
+            ) : (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-white hover:text-green-200 hover:bg-green-600"
+                onClick={() => setIsSearchOpen(true)}
+              >
+                <Search className="h-5 w-5" />
+              </Button>
+            )}
 
             <Link href="/cart">
               <Button

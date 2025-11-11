@@ -19,12 +19,19 @@ import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
 // Cloudinary uploads handled via /api/upload
 
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [newCategoryDescription, setNewCategoryDescription] = useState('');
+  const [newCategoryImage, setNewCategoryImage] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     slug: '',
@@ -42,6 +49,7 @@ export default function AdminProductsPage() {
 
   useEffect(() => {
     fetchProducts();
+    fetchCategories();
   }, []);
 
   const fetchProducts = async () => {
@@ -57,6 +65,61 @@ export default function AdminProductsPage() {
       }
     } catch (error) {
       setProducts([]);
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch('/api/categories');
+      if (res.ok) {
+        const data = await res.json();
+        setCategories(data || []);
+      }
+    } catch (error) {
+      console.error('Failed to fetch categories:', error);
+    }
+  };
+
+  const handleCreateCategory = async () => {
+    if (!newCategoryName.trim()) {
+      toast({ title: 'Category name is required', variant: 'destructive' });
+      return;
+    }
+
+    try {
+      // Generate slug from name
+      const slug = newCategoryName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      
+      const res = await fetch('/api/categories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: newCategoryName,
+          slug: slug,
+          description: newCategoryDescription,
+          image: newCategoryImage,
+        }),
+      });
+
+      if (res.ok) {
+        const newCategory = await res.json();
+        setCategories([...categories, newCategory]);
+        setFormData({ ...formData, category: newCategory._id });
+        setIsCategoryDialogOpen(false);
+        setNewCategoryName('');
+        setNewCategoryDescription('');
+        setNewCategoryImage('');
+        toast({ title: 'Category created successfully!' });
+      } else {
+        const errorData = await res.json();
+        toast({ 
+          title: 'Failed to create category', 
+          description: errorData.error || 'Please try again',
+          variant: 'destructive' 
+        });
+      }
+    } catch (error) {
+      toast({ title: 'Error creating category', variant: 'destructive' });
     }
   };
 
@@ -196,9 +259,15 @@ export default function AdminProductsPage() {
     }
   };
 
-  const openEditDialog = (product: any) => {
+  const openEditDialog = async (product: any) => {
     setEditingProduct(product);
     const existingImages = product.images || [];
+    
+    // Ensure categories are loaded
+    if (categories.length === 0) {
+      await fetchCategories();
+    }
+    
     setFormData({
       name: product.name,
       slug: product.slug || '',
@@ -206,7 +275,7 @@ export default function AdminProductsPage() {
       price: product.price.toString(),
       stockQuantity: product.stockQuantity.toString(),
       sku: product.sku,
-      category: product.category?._id || product.category || '',
+      category: product.categoryId?.toString() || product.category?._id?.toString() || product.category || '',
       images: existingImages,
     });
     setPreviewImages(existingImages);
@@ -405,12 +474,29 @@ export default function AdminProductsPage() {
                   </div>
                   <div>
                     <Label htmlFor="category">Category (Optional)</Label>
-                    <Input
-                      id="category"
-                      placeholder="Enter valid Category ID (24 characters)"
-                      value={formData.category}
-                      onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    />
+                    <div className="flex gap-2">
+                      <Select value={formData.category || undefined} onValueChange={(value) => setFormData({ ...formData, category: value === 'none' ? '' : value })}>
+                        <SelectTrigger id="category" className="flex-1">
+                          <SelectValue placeholder="Select a category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">None</SelectItem>
+                          {categories.map((cat) => (
+                            <SelectItem key={cat._id} value={cat._id}>
+                              {cat.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setIsCategoryDialogOpen(true)}
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        New
+                      </Button>
+                    </div>
                   </div>
                 </div>
                 <div>
@@ -441,8 +527,8 @@ export default function AdminProductsPage() {
                         />
                       </label>
                     </div>
-                    <div className="text-sm text-gray-500">Or enter image URL:</div>
-                    <div className="flex gap-2">
+                    {/* <div className="text-sm text-gray-500">Or enter image URL:</div> */}
+                    {/* <div className="flex gap-2">
                       <Input
                         placeholder="Image URL"
                         value={imageInput}
@@ -452,7 +538,7 @@ export default function AdminProductsPage() {
                       <Button type="button" onClick={addImage} size="sm" variant="outline">
                         Add
                       </Button>
-                    </div>
+                    </div> */}
                     {previewImages.length > 0 && (
                       <div className="flex flex-wrap gap-3 mt-3">
                         {previewImages.map((img, index) => (
@@ -613,12 +699,29 @@ export default function AdminProductsPage() {
                 </div>
                 <div>
                   <Label htmlFor="edit-category">Category (Optional)</Label>
-                  <Input
-                    id="edit-category"
-                    placeholder="Enter valid Category ID (24 characters)"
-                    value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  />
+                  <div className="flex gap-2">
+                    <Select value={formData.category || undefined} onValueChange={(value) => setFormData({ ...formData, category: value === 'none' ? '' : value })}>
+                      <SelectTrigger id="edit-category" className="flex-1">
+                        <SelectValue placeholder="Select a category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">None</SelectItem>
+                        {categories.map((cat) => (
+                          <SelectItem key={cat._id} value={cat._id}>
+                            {cat.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setIsCategoryDialogOpen(true)}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      New
+                    </Button>
+                  </div>
                 </div>
               </div>
               <div>
@@ -649,7 +752,7 @@ export default function AdminProductsPage() {
                       />
                     </label>
                   </div>
-                  <div className="text-sm text-gray-500">Or enter image URL:</div>
+                  {/* <div className="text-sm text-gray-500">Or enter image URL:</div>
                   <div className="flex gap-2">
                     <Input
                       placeholder="Image URL"
@@ -660,7 +763,7 @@ export default function AdminProductsPage() {
                     <Button type="button" onClick={addImage} size="sm" variant="outline">
                       Add
                     </Button>
-                  </div>
+                  </div> */}
                   {previewImages.length > 0 && (
                     <div className="flex flex-wrap gap-3 mt-3">
                       {previewImages.map((img, index) => (
@@ -688,6 +791,59 @@ export default function AdminProductsPage() {
                 </Button>
               </div>
             </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Category Creation Dialog */}
+        <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Create New Category</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="new-category-name">Category Name *</Label>
+                <Input
+                  id="new-category-name"
+                  required
+                  value={newCategoryName}
+                  onChange={(e) => setNewCategoryName(e.target.value)}
+                  placeholder="e.g., Organic Fruits"
+                />
+              </div>
+              <div>
+                <Label htmlFor="new-category-description">Description</Label>
+                <Textarea
+                  id="new-category-description"
+                  value={newCategoryDescription}
+                  onChange={(e) => setNewCategoryDescription(e.target.value)}
+                  placeholder="Category description"
+                  rows={3}
+                />
+              </div>
+              <div>
+                <Label htmlFor="new-category-image">Image URL</Label>
+                <Input
+                  id="new-category-image"
+                  value={newCategoryImage}
+                  onChange={(e) => setNewCategoryImage(e.target.value)}
+                  placeholder="https://example.com/image.jpg"
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-4">
+                <Button type="button" variant="outline" onClick={() => {
+                  setIsCategoryDialogOpen(false);
+                  setNewCategoryName('');
+                  setNewCategoryDescription('');
+                  setNewCategoryImage('');
+                }}>
+                  Cancel
+                </Button>
+                <Button type="button" onClick={handleCreateCategory} className="bg-green-600 hover:bg-green-700">
+                  Create Category
+                </Button>
+              </div>
+            </div>
           </DialogContent>
         </Dialog>
       </div>
