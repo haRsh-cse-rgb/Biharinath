@@ -19,13 +19,20 @@ export async function PUT(request: Request, { params }: { params: { id: string }
   try {
     await connectDB();
     const body = await request.json();
+    
+    console.log('Updating product - images received:', body.images?.length || 0);
+    
     const product = await Product.findByIdAndUpdate(params.id, body, { new: true });
     if (!product) {
       return NextResponse.json({ error: 'Product not found' }, { status: 404 });
     }
+    
+    console.log('Product updated - images saved:', product.images?.length || 0);
+    
     return NextResponse.json(product);
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to update product' }, { status: 500 });
+  } catch (error: any) {
+    console.error('Update product error:', error);
+    return NextResponse.json({ error: error.message || 'Failed to update product' }, { status: 500 });
   }
 }
 

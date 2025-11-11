@@ -29,7 +29,7 @@ export async function POST(request: Request) {
     if (!user) {
       console.log('Login: User not found');
       return NextResponse.json(
-        { error: 'Invalid credentials' },
+        { error: 'Wrong email', errorType: 'email' },
         { status: 401 }
       );
     }
@@ -39,7 +39,7 @@ export async function POST(request: Request) {
     if (!isValidPassword) {
       console.log('Login: Invalid password');
       return NextResponse.json(
-        { error: 'Invalid credentials' },
+        { error: 'Wrong password', errorType: 'password' },
         { status: 401 }
       );
     }
@@ -64,6 +64,7 @@ export async function POST(request: Request) {
         _id: user._id,
         email: user.email,
         fullName: user.fullName,
+        phone: user.phone || '',
         role: user.role,
       },
     });

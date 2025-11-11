@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import connectToDB from '@/lib/mongodb';
 import Order from '@/models/Order';
+import User from '@/models/User';
+import { sendOrderCancellationEmail } from '@/lib/email';
 
 export async function GET(_request: Request, { params }: { params: { id: string } }) {
   try {
@@ -33,10 +35,24 @@ export async function PATCH(request: Request, { params }: { params: { id: string
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
 
+    const wasCancelled = order.status === 'cancelled';
+    const isBeingCancelled = status === 'cancelled' && order.status !== 'cancelled';
+
     if (status) order.status = status;
     if (paymentStatus) order.paymentStatus = paymentStatus;
 
     await order.save();
+
+    // Send cancellation email if order is being cancelled
+    if (isBeingCancelled) {
+      const user = await User.findById(order.userId);
+      if (user) {
+        const populatedOrder = await Order.findById(params.id);
+        sendOrderCancellationEmail(populatedOrder, user.email, user.fullName).catch(err =>
+          console.error('Failed to send cancellation email:', err)
+        );
+      }
+    }
 
     const updated = await Order.findById(params.id)
       .populate('userId', 'fullName email phone')

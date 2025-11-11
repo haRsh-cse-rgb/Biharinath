@@ -5,13 +5,16 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Package } from 'lucide-react';
+import { Package, X } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 export default function OrdersPage() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [cancelling, setCancelling] = useState<string | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -29,6 +32,46 @@ export default function OrdersPage() {
     };
     load();
   }, [user?._id]);
+
+  const handleCancelOrder = async (orderId: string) => {
+    if (!confirm('Are you sure you want to cancel this order?')) return;
+
+    setCancelling(orderId);
+    try {
+      const res = await fetch(`/api/orders/${orderId}/cancel`, {
+        method: 'POST',
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        toast({
+          title: 'Order Cancelled',
+          description: 'Your order has been cancelled successfully.',
+        });
+        // Reload orders
+        const ordersRes = await fetch(`/api/orders?userId=${user?._id}`);
+        if (ordersRes.ok) {
+          const ordersData = await ordersRes.json();
+          setOrders(ordersData || []);
+        }
+      } else {
+        toast({
+          title: 'Error',
+          description: data.error || 'Failed to cancel order',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to cancel order',
+        variant: 'destructive',
+      });
+    } finally {
+      setCancelling(null);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 pt-24 pb-12">
@@ -79,9 +122,23 @@ export default function OrdersPage() {
                       <p className="font-semibold">₹{order.totalAmount}</p>
                       <p className="text-sm text-gray-600">{order.items?.length || 0} items</p>
                     </div>
-                    <Link href={`/order-success?orderId=${encodeURIComponent(order._id)}`}>
-                      <Button variant="outline">View Details</Button>
-                    </Link>
+                    <div className="flex gap-2">
+                      {['pending', 'processing'].includes(order.status) && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleCancelOrder(order._id)}
+                          disabled={cancelling === order._id}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <X className="h-4 w-4 mr-1" />
+                          {cancelling === order._id ? 'Cancelling...' : 'Cancel'}
+                        </Button>
+                      )}
+                      <Link href={`/order-success?orderId=${encodeURIComponent(order._id)}`}>
+                        <Button variant="outline">View Details</Button>
+                      </Link>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

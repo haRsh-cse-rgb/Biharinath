@@ -108,17 +108,22 @@ export default function AdminProductsPage() {
       // Generate unique slug from name if not provided
       const slug = formData.slug || await generateUniqueSlug(formData.name);
       
+      const productData = {
+        ...formData,
+        slug,
+        price: parseFloat(formData.price),
+        stockQuantity: parseInt(formData.stockQuantity),
+        images: formData.images || [], // Ensure images array is included
+        // Only include categoryId if it's a valid ObjectId format (24 character hex string)
+        categoryId: formData.category && formData.category.length === 24 ? formData.category : undefined,
+      };
+      
+      console.log('Creating product with data:', { ...productData, images: productData.images.length });
+      
       const res = await fetch('/api/products', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...formData,
-          slug,
-          price: parseFloat(formData.price),
-          stockQuantity: parseInt(formData.stockQuantity),
-          // Only include categoryId if it's a valid ObjectId format (24 character hex string)
-          categoryId: formData.category && formData.category.length === 24 ? formData.category : undefined,
-        }),
+        body: JSON.stringify(productData),
       });
 
       if (res.ok) {
@@ -142,16 +147,21 @@ export default function AdminProductsPage() {
   const handleEditProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const productData = {
+        ...formData,
+        price: parseFloat(formData.price),
+        stockQuantity: parseInt(formData.stockQuantity),
+        images: formData.images || [], // Ensure images array is included
+        // Only include categoryId if it's a valid ObjectId format (24 character hex string)
+        categoryId: formData.category && formData.category.length === 24 ? formData.category : undefined,
+      };
+      
+      console.log('Updating product with data:', { ...productData, images: productData.images.length });
+      
       const res = await fetch(`/api/products/${editingProduct._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...formData,
-          price: parseFloat(formData.price),
-          stockQuantity: parseInt(formData.stockQuantity),
-          // Only include categoryId if it's a valid ObjectId format (24 character hex string)
-          categoryId: formData.category && formData.category.length === 24 ? formData.category : undefined,
-        }),
+        body: JSON.stringify(productData),
       });
 
       if (res.ok) {
@@ -204,12 +214,25 @@ export default function AdminProductsPage() {
   };
 
   const addImage = () => {
-    if (imageInput.trim()) {
-      setFormData(prev => ({
-        ...prev,
-        images: [...prev.images, imageInput.trim()],
-      }));
-      setImageInput('');
+    const url = imageInput.trim();
+    if (url) {
+      // Validate URL format
+      try {
+        new URL(url);
+        setFormData(prev => ({
+          ...prev,
+          images: [...prev.images, url],
+        }));
+        setPreviewImages(prev => [...prev, url]);
+        setImageInput('');
+        toast({ title: 'Image URL added successfully!' });
+      } catch (error) {
+        toast({ 
+          title: 'Invalid URL', 
+          description: 'Please enter a valid image URL',
+          variant: 'destructive' 
+        });
+      }
     }
   };
 
@@ -228,15 +251,34 @@ export default function AdminProductsPage() {
     setUploading(true);
     try {
       const uploadPromises = Array.from(files).map(async (file) => {
-        const fd = new FormData();
-        fd.append('file', file);
-        const res = await fetch('/api/upload', { method: 'POST', body: fd });
-        if (!res.ok) return null;
-        const data = await res.json();
-        return data.url as string;
+        try {
+          const fd = new FormData();
+          fd.append('file', file);
+          const res = await fetch('/api/upload', { method: 'POST', body: fd });
+          
+          if (!res.ok) {
+            const errorData = await res.json().catch(() => ({ error: 'Upload failed' }));
+            console.error('Upload error:', errorData);
+            throw new Error(errorData.error || `Failed to upload ${file.name}`);
+          }
+          
+          const data = await res.json();
+          if (!data.url) {
+            throw new Error(`No URL returned for ${file.name}`);
+          }
+          return data.url as string;
+        } catch (error: any) {
+          console.error(`Error uploading ${file.name}:`, error);
+          toast({ 
+            title: `Failed to upload ${file.name}`, 
+            description: error.message || 'Upload failed',
+            variant: 'destructive' 
+          });
+          return null;
+        }
       });
+      
       const uploadedUrls = await Promise.all(uploadPromises);
-
       const validUrls = uploadedUrls.filter((url): url is string => !!url);
 
       if (validUrls.length > 0) {
@@ -245,12 +287,26 @@ export default function AdminProductsPage() {
           images: [...prev.images, ...validUrls],
         }));
         setPreviewImages(prev => [...prev, ...validUrls]);
-        toast({ title: `${validUrls.length} image(s) uploaded successfully!` });
+        toast({ 
+          title: `${validUrls.length} image(s) uploaded successfully!`,
+          description: validUrls.length < files.length 
+            ? `${files.length - validUrls.length} image(s) failed to upload`
+            : undefined
+        });
       } else {
-        toast({ title: 'Failed to upload images', variant: 'destructive' });
+        toast({ 
+          title: 'Failed to upload images', 
+          description: 'Please check your Cloudinary configuration or try again',
+          variant: 'destructive' 
+        });
       }
-    } catch (error) {
-      toast({ title: 'Error uploading images', variant: 'destructive' });
+    } catch (error: any) {
+      console.error('Upload error:', error);
+      toast({ 
+        title: 'Error uploading images', 
+        description: error.message || 'An unexpected error occurred',
+        variant: 'destructive' 
+      });
     } finally {
       setUploading(false);
       e.target.value = '';

@@ -5,16 +5,20 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Eye, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 
-export default function AdminOrdersPage() {
+function AdminOrdersContent() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const searchParams = useSearchParams();
+  const userId = searchParams.get('userId');
 
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const response = await fetch('/api/orders');
+        const url = userId ? `/api/orders?userId=${userId}` : '/api/orders';
+        const response = await fetch(url);
         const data = await response.json();
         setOrders(data);
       } catch (error) {
@@ -25,19 +29,21 @@ export default function AdminOrdersPage() {
     };
 
     fetchOrders();
-  }, []);
+  }, [userId]);
 
   return (
     <div className="min-h-screen bg-gray-50 pt-24 pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center mb-8">
-          <Link href="/admin">
+          <Link href={userId ? "/admin/customers" : "/admin"}>
             <Button variant="ghost" size="sm" className="mr-4">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back
             </Button>
           </Link>
-          <h1 className="text-3xl font-bold">Manage Orders</h1>
+          <h1 className="text-3xl font-bold">
+            {userId ? 'Customer Orders' : 'Manage Orders'}
+          </h1>
         </div>
 
         {loading ? (
@@ -93,5 +99,17 @@ export default function AdminOrdersPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function AdminOrdersPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 pt-24 pb-12 flex items-center justify-center">
+        <p className="text-gray-500">Loading...</p>
+      </div>
+    }>
+      <AdminOrdersContent />
+    </Suspense>
   );
 }

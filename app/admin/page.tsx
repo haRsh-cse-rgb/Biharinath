@@ -25,9 +25,11 @@ interface Order {
 
 interface Booking {
   _id: string;
-  visitDate: string;
+  preferredDate: string;
   status: string;
-  numberOfPeople: number;
+  numberOfGuests: number;
+  fullName?: string;
+  email?: string;
   user?: { fullName: string; email: string };
 }
 
@@ -126,17 +128,17 @@ export default function AdminDashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-          <Button
+          {/* <Button
             onClick={handleSeedDatabase}
             disabled={seeding}
             className="bg-blue-600 hover:bg-blue-700"
           >
             <Database className="mr-2 h-4 w-4" />
             {seeding ? 'Seeding Database...' : 'Seed Database'}
-          </Button>
+          </Button> */}
         </div>
 
-        <Card className="mb-8 bg-blue-50 border-blue-200">
+        {/* <Card className="mb-8 bg-blue-50 border-blue-200">
           <CardHeader>
             <CardTitle className="flex items-center">
               <Database className="mr-2 h-5 w-5 text-blue-600" />
@@ -162,7 +164,7 @@ export default function AdminDashboard() {
               <p className="text-red-600 font-medium mt-4">Warning: This will delete all existing data!</p>
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {statsCards.map((stat) => (
@@ -232,12 +234,14 @@ export default function AdminDashboard() {
                   {pendingBookings.map((booking) => (
                     <div key={booking._id} className="flex items-center justify-between border-b pb-3 last:border-0">
                       <div>
-                        <p className="font-semibold text-sm">{booking.user?.fullName || 'N/A'}</p>
-                        <p className="text-xs text-gray-500">{booking.user?.email || 'N/A'}</p>
-                        <p className="text-xs text-gray-400">{formatDate(booking.visitDate)}</p>
+                        <p className="font-semibold text-sm">{booking.user?.fullName || booking.fullName || 'N/A'}</p>
+                        <p className="text-xs text-gray-500">{booking.user?.email || booking.email || 'N/A'}</p>
+                        <p className="text-xs text-gray-400">
+                          {booking.preferredDate ? formatDate(booking.preferredDate) : 'N/A'}
+                        </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-semibold">{booking.numberOfPeople} people</p>
+                        <p className="text-sm font-semibold">{booking.numberOfGuests || 0} people</p>
                         <span className="text-xs px-2 py-1 rounded-full bg-orange-100 text-orange-700">
                           {booking.status}
                         </span>

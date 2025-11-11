@@ -1,14 +1,58 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Booking from '@/models/Booking';
+import { cookies } from 'next/headers';
+import jwt from 'jsonwebtoken';
+import User from '@/models/User';
+import { sendBookingConfirmationEmail } from '@/lib/email';
 
 export async function GET(request: Request) {
   try {
     await connectDB();
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
+    const email = searchParams.get('email');
 
-    const query = userId ? { userId } : {};
+    let query: any = {};
+    
+    // If userId is provided, filter by userId
+    if (userId) {
+      query.userId = userId;
+    } 
+    // If email is provided, filter by email
+    else if (email) {
+      query.email = email;
+    }
+    // If no params, try to get from auth token
+    else {
+      try {
+        const cookieStore = cookies();
+        const token = cookieStore.get('auth-token')?.value;
+        if (token) {
+          const decoded: any = jwt.verify(token, process.env.JWT_SECRET!);
+          const user = await User.findById(decoded.userId);
+          if (user) {
+            // If user is admin, return all bookings
+            if (user.role === 'admin') {
+              query = {}; // No filter, return all bookings
+            } else {
+              // Filter by both userId and email to catch all bookings for this user
+              query.$or = [
+                { userId: decoded.userId },
+                { email: user.email }
+              ];
+            }
+          }
+        } else {
+          // No token, return empty array
+          return NextResponse.json([]);
+        }
+      } catch (err) {
+        // If no auth, return empty array
+        return NextResponse.json([]);
+      }
+    }
+
     const bookings = await Booking.find(query).populate('userId').sort({ createdAt: -1 });
     return NextResponse.json(bookings);
   } catch (error) {
@@ -30,6 +74,11 @@ export async function POST(request: Request) {
 
     const booking = await Booking.create({ ...body, bookingNumber });
     console.log('Booking: Created successfully:', booking._id);
+
+    // Send booking confirmation email
+    sendBookingConfirmationEmail(booking, body.email, body.fullName).catch(err =>
+      console.error('Failed to send booking confirmation email:', err)
+    );
 
     return NextResponse.json(booking, { status: 201 });
   } catch (error: any) {

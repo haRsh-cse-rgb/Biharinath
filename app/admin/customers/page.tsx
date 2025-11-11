@@ -143,10 +143,12 @@ export default function AdminCustomersPage() {
                     </div>
 
                     <div className="flex flex-col items-end gap-2">
-                      <Button variant="outline" size="sm" className="text-green-600 hover:text-green-700">
-                        <ShoppingBag className="h-4 w-4 mr-2" />
-                        View Orders
-                      </Button>
+                      <Link href={`/admin/orders?userId=${customer._id}`}>
+                        <Button variant="outline" size="sm" className="text-green-600 hover:text-green-700">
+                          <ShoppingBag className="h-4 w-4 mr-2" />
+                          View Orders
+                        </Button>
+                      </Link>
                     </div>
                   </div>
                 </CardContent>

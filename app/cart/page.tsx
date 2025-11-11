@@ -80,10 +80,14 @@ export default function CartPage() {
     }
   };
 
-  const subtotal = cartItems.reduce((sum, item) => sum + (item.productId?.price || 0) * item.quantity, 0);
-  const tax = subtotal * 0.05;
-  const shipping = subtotal > 999 ? 0 : 50;
-  const total = subtotal + tax + shipping;
+  const subtotal = cartItems.reduce((sum, item) => {
+    const price = Number(item.productId?.price) || 0;
+    const quantity = Number(item.quantity) || 0;
+    return sum + price * quantity;
+  }, 0);
+  const tax = Number(subtotal) * 0.05;
+  const shipping = Number(subtotal) > 999 ? 0 : 50;
+  const total = Number(subtotal) + Number(tax) + Number(shipping);
 
   if (cartItems.length === 0) {
     return (
@@ -121,20 +125,24 @@ export default function CartPage() {
                       />
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-semibold text-lg">{item.productId?.name}</h3>
-                      <p className="text-gray-600">₹{item.productId?.price} per {item.productId?.unit}</p>
+                      <h3 className="font-semibold text-lg">{item.productId?.name || 'Product'}</h3>
+                      <p className="text-gray-600">
+                        ₹{Number(item.productId?.price) || 0} per {item.productId?.unit || 'unit'}
+                      </p>
                     </div>
                     <div className="flex items-center space-x-2">
                       <Button variant="outline" size="sm" onClick={() => updateQuantity(item._id, -1)}>
                         <Minus className="h-4 w-4" />
                       </Button>
-                      <span className="w-12 text-center font-semibold">{item.quantity}</span>
+                      <span className="w-12 text-center font-semibold">{Number(item.quantity) || 0}</span>
                       <Button variant="outline" size="sm" onClick={() => updateQuantity(item._id, 1)}>
                         <Plus className="h-4 w-4" />
                       </Button>
                     </div>
                     <div className="text-right w-24">
-                      <p className="font-bold">₹{item.productId?.price * item.quantity}</p>
+                      <p className="font-bold">
+                        ₹{((Number(item.productId?.price) || 0) * (Number(item.quantity) || 0)).toFixed(2)}
+                      </p>
                     </div>
                     <Button variant="ghost" size="sm" onClick={() => removeItem(item._id)}>
                       <Trash2 className="h-4 w-4 text-red-500" />

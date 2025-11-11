@@ -3,8 +3,10 @@ import Razorpay from 'razorpay';
 import connectDB from '@/lib/mongodb';
 import Order from '@/models/Order';
 import Cart from '@/models/Cart';
+import User from '@/models/User';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
+import { sendOrderConfirmationEmail } from '@/lib/email';
 
 const razorpay = new Razorpay({
   key_id: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!,
@@ -116,6 +118,14 @@ export async function POST(request: Request) {
       const order = await Order.create(orderData);
 
       await Cart.findOneAndUpdate({ userId }, { items: [] });
+
+      // Send order confirmation email for COD
+      const user = await User.findById(userId);
+      if (user) {
+        sendOrderConfirmationEmail(order, user.email, user.fullName).catch(err =>
+          console.error('Failed to send order confirmation email:', err)
+        );
+      }
 
       return NextResponse.json({
         success: true,

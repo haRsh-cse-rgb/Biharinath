@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import connectDB from '@/lib/mongodb';
 import Order from '@/models/Order';
+import User from '@/models/User';
+import { sendOrderConfirmationEmail } from '@/lib/email';
 
 export async function POST(request: Request) {
   try {
@@ -40,6 +42,14 @@ export async function POST(request: Request) {
       );
 
       console.log('Verify Payment: Order updated:', order.orderNumber);
+
+      // Send order confirmation email
+      const user = await User.findById(order.userId);
+      if (user) {
+        sendOrderConfirmationEmail(order, user.email, user.fullName).catch(err =>
+          console.error('Failed to send order confirmation email:', err)
+        );
+      }
 
       return NextResponse.json({
         success: true,

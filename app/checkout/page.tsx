@@ -55,6 +55,7 @@ export default function CheckoutPage() {
       return;
     }
     fetchCart();
+    fetchLastOrderAddress();
   }, [user]);
 
   const fetchCart = async () => {
@@ -66,6 +67,65 @@ export default function CheckoutPage() {
       }
     } catch (error) {
       console.error('Failed to fetch cart:', error);
+    }
+  };
+
+  const fetchLastOrderAddress = async () => {
+    if (!user?._id) return;
+    try {
+      const res = await fetch(`/api/orders?userId=${user._id}`);
+      if (res.ok) {
+        const orders = await res.json();
+        if (orders && orders.length > 0) {
+          // Get the most recent order
+          const lastOrder = orders[0];
+          if (lastOrder.shippingAddress) {
+            setShippingInfo({
+              fullName: lastOrder.shippingAddress.fullName || user.fullName || '',
+              phone: lastOrder.shippingAddress.phone || '',
+              addressLine1: lastOrder.shippingAddress.addressLine1 || '',
+              addressLine2: lastOrder.shippingAddress.addressLine2 || '',
+              city: lastOrder.shippingAddress.city || '',
+              state: lastOrder.shippingAddress.state || '',
+              postalCode: lastOrder.shippingAddress.postalCode || '',
+            });
+          } else {
+            // Fallback to user profile data
+            setShippingInfo({
+              fullName: user.fullName || '',
+              phone: user.phone || '',
+              addressLine1: '',
+              addressLine2: '',
+              city: '',
+              state: '',
+              postalCode: '',
+            });
+          }
+        } else {
+          // No previous orders, use user profile data
+          setShippingInfo({
+            fullName: user.fullName || '',
+            phone: user.phone || '',
+            addressLine1: '',
+            addressLine2: '',
+            city: '',
+            state: '',
+            postalCode: '',
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch last order:', error);
+      // Fallback to user profile data
+      setShippingInfo({
+        fullName: user?.fullName || '',
+        phone: user?.phone || '',
+        addressLine1: '',
+        addressLine2: '',
+        city: '',
+        state: '',
+        postalCode: '',
+      });
     }
   };
 

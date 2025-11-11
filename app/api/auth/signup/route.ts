@@ -3,6 +3,7 @@ import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { sendWelcomeEmail } from '@/lib/email';
 
 export async function POST(request: Request) {
   try {
@@ -67,6 +68,7 @@ export async function POST(request: Request) {
           _id: user._id,
           email: user.email,
           fullName: user.fullName,
+          phone: user.phone || '',
           role: user.role,
         },
       },
@@ -79,6 +81,11 @@ export async function POST(request: Request) {
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 7,
     });
+
+    // Send welcome email (don't wait for it)
+    sendWelcomeEmail(user.email, user.fullName).catch(err => 
+      console.error('Failed to send welcome email:', err)
+    );
 
     console.log('Signup: Success');
     return response;

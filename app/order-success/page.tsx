@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, Download, Home, Package } from 'lucide-react';
+import { CheckCircle, Download, Home, Package, XCircle, Truck } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 
 interface Order {
@@ -136,17 +137,57 @@ Thank you for shopping with us!
     );
   }
 
+  // Determine status-based UI elements
+  const getStatusConfig = () => {
+    switch (order.status) {
+      case 'cancelled':
+        return {
+          icon: <XCircle className="h-20 w-20 text-red-600" />,
+          title: 'Order Cancelled',
+          message: 'This order has been cancelled. If you have any questions, please contact our support team.',
+          badge: <Badge className="bg-red-600">Cancelled</Badge>,
+        };
+      case 'delivered':
+        return {
+          icon: <Truck className="h-20 w-20 text-green-600" />,
+          title: 'Order Delivered!',
+          message: 'Your order has been successfully delivered. Thank you for shopping with us!',
+          badge: <Badge className="bg-green-600">Delivered</Badge>,
+        };
+      case 'shipped':
+      case 'out_for_delivery':
+        return {
+          icon: <Package className="h-20 w-20 text-blue-600" />,
+          title: 'Order Shipped!',
+          message: 'Your order has been shipped and is on its way. You will receive it soon.',
+          badge: <Badge className="bg-blue-600">{order.status.replace('_', ' ')}</Badge>,
+        };
+      default:
+        return {
+          icon: <CheckCircle className="h-20 w-20 text-green-600" />,
+          title: 'Order Placed Successfully!',
+          message: "Thank you for your order. We'll send you a confirmation email shortly.",
+          badge: <Badge className="bg-yellow-600 capitalize">{order.status}</Badge>,
+        };
+    }
+  };
+
+  const statusConfig = getStatusConfig();
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-white pt-24 pb-12">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
-            <CheckCircle className="h-20 w-20 text-green-600" />
+            {statusConfig.icon}
           </div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Order Placed Successfully!</h1>
-          <p className="text-lg text-gray-600">
-            Thank you for your order. We'll send you a confirmation email shortly.
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">{statusConfig.title}</h1>
+          <p className="text-lg text-gray-600 mb-3">
+            {statusConfig.message}
           </p>
+          <div className="flex justify-center">
+            {statusConfig.badge}
+          </div>
         </div>
 
         <Card className="mb-6">
@@ -174,7 +215,14 @@ Thank you for shopping with us!
               </div>
               <div>
                 <p className="text-gray-600">Order Status</p>
-                <p className="font-semibold capitalize">{order.status}</p>
+                <Badge className={
+                  order.status === 'delivered' ? 'bg-green-600' :
+                  order.status === 'cancelled' ? 'bg-red-600' :
+                  order.status === 'shipped' || order.status === 'out_for_delivery' ? 'bg-blue-600' :
+                  'bg-yellow-600'
+                }>
+                  {order.status.replace('_', ' ')}
+                </Badge>
               </div>
             </div>
           </CardContent>
@@ -243,14 +291,16 @@ Thank you for shopping with us!
         </Card>
 
         <div className="flex flex-col sm:flex-row gap-4">
-          <Button
-            onClick={downloadInvoice}
-            variant="outline"
-            className="flex-1"
-          >
-            <Download className="mr-2 h-4 w-4" />
-            Download Invoice
-          </Button>
+          {order.status !== 'cancelled' && (
+            <Button
+              onClick={downloadInvoice}
+              variant="outline"
+              className="flex-1"
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Download Invoice
+            </Button>
+          )}
           <Link href="/orders" className="flex-1">
             <Button variant="outline" className="w-full">
               <Package className="mr-2 h-4 w-4" />
@@ -260,7 +310,7 @@ Thank you for shopping with us!
           <Link href="/" className="flex-1">
             <Button className="w-full bg-green-600 hover:bg-green-700">
               <Home className="mr-2 h-4 w-4" />
-              Continue Shopping
+              {order.status === 'cancelled' ? 'Go to Home' : 'Continue Shopping'}
             </Button>
           </Link>
         </div>

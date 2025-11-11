@@ -4,15 +4,18 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, ShoppingCart, User, MapPin, CreditCard } from 'lucide-react';
+import { ArrowLeft, ShoppingCart, User, MapPin, CreditCard, X } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
+import { useRouter } from 'next/navigation';
 
 export default function OrderDetailsPage({ params }: { params: { id: string } }) {
   const [order, setOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
 
   useEffect(() => {
     const fetchOrderDetails = async () => {
@@ -157,7 +160,37 @@ export default function OrderDetailsPage({ params }: { params: { id: string } })
                     <option value="returned">returned</option>
                   </select>
                 </div>
-                <div className="flex justify-end">
+                <div className="flex justify-end gap-2">
+                  {['pending', 'processing'].includes(order.status) && (
+                    <Button
+                      variant="outline"
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      disabled={cancelling}
+                      onClick={async () => {
+                        if (!confirm('Are you sure you want to cancel this order?')) return;
+                        setCancelling(true);
+                        try {
+                          const res = await fetch(`/api/orders/${params.id}/cancel`, {
+                            method: 'POST',
+                          });
+                          if (res.ok) {
+                            const data = await res.json();
+                            setOrder(data.order);
+                            toast({ title: 'Order cancelled successfully' });
+                            router.refresh();
+                          } else {
+                            const error = await res.json();
+                            toast({ title: 'Failed to cancel order', description: error.error, variant: 'destructive' });
+                          }
+                        } finally {
+                          setCancelling(false);
+                        }
+                      }}
+                    >
+                      <X className="h-4 w-4 mr-1" />
+                      {cancelling ? 'Cancelling...' : 'Cancel Order'}
+                    </Button>
+                  )}
                   <Button
                     className="bg-green-600 hover:bg-green-700"
                     disabled={saving}

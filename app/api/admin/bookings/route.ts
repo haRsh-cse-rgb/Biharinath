@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Booking from '@/models/Booking';
+import { sendBookingApprovalEmail, sendBookingRejectionEmail } from '@/lib/email';
 
 export async function PUT(request: Request) {
   try {
@@ -30,6 +31,17 @@ export async function PUT(request: Request) {
 
     if (!booking) {
       return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
+    }
+
+    // Send approval/rejection email
+    if (status === 'approved') {
+      sendBookingApprovalEmail(booking, booking.email, booking.fullName).catch(err =>
+        console.error('Failed to send approval email:', err)
+      );
+    } else if (status === 'rejected') {
+      sendBookingRejectionEmail(booking, booking.email, booking.fullName, rejectionReason).catch(err =>
+        console.error('Failed to send rejection email:', err)
+      );
     }
 
     return NextResponse.json(booking);

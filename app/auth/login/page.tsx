@@ -22,12 +22,12 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
 
-    const { error } = await signIn(email, password);
+    const { error, errorType } = await signIn(email, password);
 
     if (error) {
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to sign in',
+        title: errorType === 'email' ? 'Wrong Email' : errorType === 'password' ? 'Wrong Password' : 'Error',
+        description: error || 'Failed to sign in',
         variant: 'destructive',
       });
     } else {
@@ -64,7 +64,12 @@ export default function LoginPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">Password</Label>
+                <Link href="/auth/forgot-password" className="text-sm text-blue-600 hover:underline">
+                  Forgot password?
+                </Link>
+              </div>
               <Input
                 id="password"
                 type="password"

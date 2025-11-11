@@ -37,6 +37,7 @@ export async function POST(request: Request) {
     await connectDB();
     const body = await request.json();
     
+    console.log('Creating product - images received:', body.images?.length || 0);
     
     // Validate required fields
     if (!body.name) {

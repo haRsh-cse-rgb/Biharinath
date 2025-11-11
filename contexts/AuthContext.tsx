@@ -6,6 +6,7 @@ interface User {
   _id: string;
   email: string;
   fullName: string;
+  phone?: string;
   role: string;
 }
 
@@ -72,11 +73,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const data = await response.json();
 
       if (!response.ok) {
-        return { error: data.error || 'Failed to sign in' };
+        return { error: data.error || 'Failed to sign in', errorType: data.errorType };
       }
 
       setUser(data.user);
-      return { error: null };
+      return { error: null, errorType: null };
     } catch (error) {
       return { error: 'Failed to sign in' };
     }
@@ -86,6 +87,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
       setUser(null);
+      if (typeof window !== 'undefined') {
+        window.location.href = '/';
+      }
     } catch (error) {
       console.error('Logout error:', error);
     }

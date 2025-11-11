@@ -41,7 +41,9 @@ export async function POST(request: Request) {
       await cart.save();
     }
 
-    return NextResponse.json(cart);
+    // Populate productId before returning
+    const populated = await Cart.findOne({ userId }).populate('items.productId');
+    return NextResponse.json(populated || { items: [] });
   } catch (error) {
     return NextResponse.json({ error: 'Failed to update cart' }, { status: 500 });
   }
@@ -60,7 +62,9 @@ export async function DELETE(request: Request) {
       await cart.save();
     }
 
-    return NextResponse.json(cart);
+    // Populate productId before returning
+    const populated = await Cart.findOne({ userId }).populate('items.productId');
+    return NextResponse.json(populated || { items: [] });
   } catch (error) {
     return NextResponse.json({ error: 'Failed to remove item' }, { status: 500 });
   }
