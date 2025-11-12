@@ -9,8 +9,16 @@ import { Footer } from '@/components/layout/Footer';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'ShopHub - Your Premium E-Commerce Destination',
-  description: 'Discover quality products with seamless shopping and site booking experience',
+  title: {
+    default: 'Biharinath Organic Farms',
+    template: '%s | Biharinath Organic Farms',
+  },
+  description: 'Fresh, healthy, and naturally grown organic produce from Biharinath Organic Farms. Shop organic products, book farm visits, and experience farm-to-home freshness.',
+  icons: {
+    icon: '/logo.jpeg',
+    shortcut: '/logo.jpeg',
+    apple: '/logo.jpeg',
+  },
 };
 
 export default function RootLayout({

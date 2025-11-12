@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import Script from 'next/script';
 import { ShoppingCart, CreditCard, Truck } from 'lucide-react';
+import { PageTitle } from '@/components/layout/PageTitle';
 
 declare global {
   interface Window {
@@ -262,6 +263,7 @@ export default function CheckoutPage() {
 
   return (
     <>
+      <PageTitle title="Checkout" />
       <Script src="https://checkout.razorpay.com/v1/checkout.js" />
       <div className="min-h-screen bg-gradient-to-br from-green-50 to-white pt-24 pb-12">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">

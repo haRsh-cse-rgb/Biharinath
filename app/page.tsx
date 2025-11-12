@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { ProductCard } from '@/components/products/ProductCard';
 import { Product, Category } from '@/types';
 import { ArrowRight, ShoppingBag, Truck, Shield, HeadphonesIcon, Calendar, Leaf, Sprout, Heart, Users } from 'lucide-react';
+import { PageTitle } from '@/components/layout/PageTitle';
 
 export default function Home() {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
@@ -47,7 +48,9 @@ export default function Home() {
   };
 
   return (
-    <div className="overflow-hidden">
+    <>
+      <PageTitle title="Home" />
+      <div className="overflow-hidden">
       <motion.section
         className="relative h-screen flex items-center justify-center bg-gradient-to-br from-green-600 via-green-700 to-green-900"
         style={{ y: heroY }}
@@ -267,5 +270,6 @@ export default function Home() {
         </div>
       </section>
     </div>
+    </>
   );
 }

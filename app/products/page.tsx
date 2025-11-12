@@ -12,6 +12,7 @@ import { Search, ShoppingCart, Filter, Home } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { PageTitle } from '@/components/layout/PageTitle';
 
 function ProductsContent() {
   const { toast } = useToast();
@@ -69,7 +70,9 @@ function ProductsContent() {
   const filteredProducts = products;
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-24 pb-12">
+    <>
+      <PageTitle title="Products" />
+      <div className="min-h-screen bg-gray-50 pt-24 pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
@@ -235,6 +238,7 @@ function ProductsContent() {
         )}
       </div>
     </div>
+    </>
   );
 }
 

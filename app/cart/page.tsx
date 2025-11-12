@@ -8,6 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Trash2, Plus, Minus, ShoppingBag } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { PageTitle } from '@/components/layout/PageTitle';
 
 export default function CartPage() {
   const [cartItems, setCartItems] = useState<any[]>([]);
@@ -105,7 +106,9 @@ export default function CartPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-24 pb-12">
+    <>
+      <PageTitle title="Shopping Cart" />
+      <div className="min-h-screen bg-gray-50 pt-24 pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h1 className="text-3xl font-bold mb-8">Shopping Cart</h1>
 
@@ -187,5 +190,6 @@ export default function CartPage() {
         </div>
       </div>
     </div>
+    </>
   );
 }
