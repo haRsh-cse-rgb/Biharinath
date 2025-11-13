@@ -68,7 +68,15 @@ export default function Home() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8 }}
           >
-            <Leaf className="h-16 w-16 md:h-20 md:w-20 text-green-400" />
+            <div className="relative h-20 w-20 md:h-24 md:w-24 rounded-full overflow-hidden border-4 border-white shadow-lg">
+              <Image
+                src="/logo.jpeg"
+                alt="Biharinath Organic Farms"
+                fill
+                className="object-cover"
+                unoptimized
+              />
+            </div>
           </motion.div>
 
           <motion.h1

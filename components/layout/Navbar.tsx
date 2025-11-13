@@ -1,10 +1,11 @@
 "use client";
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { ShoppingCart, User, Search, Menu, X, LogOut, Package, MapPin, Settings, Leaf, Heart } from 'lucide-react';
+import { ShoppingCart, User, Search, Menu, X, LogOut, Package, MapPin, Settings, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -77,10 +78,19 @@ export function Navbar() {
         <div className="flex justify-between items-center h-16 md:h-20">
           <Link
             href="/"
-            className="flex items-center space-x-2 text-white"
+            className="flex items-center space-x-2 text-white min-w-0 flex-shrink"
           >
-            <Leaf className="h-8 w-8" />
-            <span className="text-xl md:text-2xl font-bold">Biharinath Organic Farms</span>
+            <div className="relative h-10 w-10 md:h-12 md:w-12 rounded-full overflow-hidden flex-shrink-0 border-2 border-white">
+              <Image
+                src="/logo.jpeg"
+                alt="Biharinath Organic Farms"
+                fill
+                className="object-cover"
+                unoptimized
+              />
+            </div>
+            <span className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold truncate hidden sm:block">Biharinath Organic Farms</span>
+            <span className="text-sm font-bold truncate sm:hidden">Biharinath</span>
           </Link>
 
           <div className="hidden md:flex items-center space-x-8">
@@ -104,43 +114,43 @@ export function Navbar() {
             </Link>
           </div>
 
-          <div className="flex items-center space-x-2 md:space-x-4">
+          <div className="flex items-center space-x-1 sm:space-x-2 md:space-x-4 flex-shrink-0">
             {isSearchOpen ? (
-              <form onSubmit={handleSearch} className="flex items-center gap-2">
+              <form onSubmit={handleSearch} className="flex items-center gap-1 sm:gap-2 flex-1 min-w-0">
                 <Input
                   type="text"
                   placeholder="Search products..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-48 md:w-64 bg-white text-gray-900"
+                  className="w-full max-w-[120px] sm:max-w-[150px] md:max-w-none md:w-48 lg:w-64 bg-white text-gray-900 text-sm"
                   autoFocus
                 />
                 <Button
                   type="submit"
                   variant="ghost"
                   size="icon"
-                  className="text-white hover:text-green-200 hover:bg-green-600"
+                  className="text-white hover:text-green-200 hover:bg-green-600 flex-shrink-0"
                 >
-                  <Search className="h-5 w-5" />
+                  <Search className="h-4 w-4 sm:h-5 sm:w-5" />
                 </Button>
                 <Button
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="text-white hover:text-green-200 hover:bg-green-600"
+                  className="text-white hover:text-green-200 hover:bg-green-600 flex-shrink-0"
                   onClick={() => {
                     setIsSearchOpen(false);
                     setSearchTerm('');
                   }}
                 >
-                  <X className="h-5 w-5" />
+                  <X className="h-4 w-4 sm:h-5 sm:w-5" />
                 </Button>
               </form>
             ) : (
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-white hover:text-green-200 hover:bg-green-600"
+                className="text-white hover:text-green-200 hover:bg-green-600 flex-shrink-0"
                 onClick={() => setIsSearchOpen(true)}
               >
                 <Search className="h-5 w-5" />
@@ -231,14 +241,16 @@ export function Navbar() {
               </Link>
             )}
 
-            <Button
-              variant="ghost"
-              size="icon"
-              className="md:hidden text-white hover:text-green-200 hover:bg-green-600"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-              {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </Button>
+            {!isSearchOpen && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="md:hidden text-white hover:text-green-200 hover:bg-green-600 flex-shrink-0"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              >
+                {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              </Button>
+            )}
           </div>
         </div>
       </div>

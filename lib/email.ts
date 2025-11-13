@@ -308,6 +308,242 @@ export async function sendBookingRejectionEmail(booking: any, email: string, ful
   }
 }
 
+export async function sendOrderShippedEmail(order: any, userEmail: string, userName: string) {
+  try {
+    const itemsHtml = order.items.map((item: any) => `
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;">${item.productName}</td>
+        <td style="padding: 10px; border-bottom: 1px solid #e5e7eb; text-align: center;">${item.quantity}</td>
+      </tr>
+    `).join('');
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER || 'biharinath.org.farm@gmail.com',
+      to: userEmail,
+      subject: `Your Order Has Been Shipped - ${order.orderNumber} - Biharinath Organic Farms`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #16a34a; text-align: center;">📦 Your Order Has Been Shipped!</h2>
+          <p>Dear ${userName},</p>
+          <p>Great news! Your order <strong>#${order.orderNumber}</strong> has been shipped and is on its way to you.</p>
+          
+          <div style="background-color: #f0fdf4; padding: 20px; border-radius: 8px; margin: 20px 0; border: 2px solid #16a34a;">
+            <h3 style="color: #16a34a; margin-top: 0;">Order Details</h3>
+            <p><strong>Order Number:</strong> ${order.orderNumber}</p>
+            <p><strong>Order Date:</strong> ${new Date(order.createdAt).toLocaleDateString('en-IN')}</p>
+            <p><strong>Total Amount:</strong> ₹${order.totalAmount}</p>
+            ${order.trackingNumber ? `<p><strong>Tracking Number:</strong> ${order.trackingNumber}</p>` : ''}
+            ${order.courierName ? `<p><strong>Courier:</strong> ${order.courierName}</p>` : ''}
+          </div>
+
+          <h3 style="color: #16a34a;">Items in Your Order</h3>
+          <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+            <thead>
+              <tr style="background-color: #f3f4f6;">
+                <th style="padding: 10px; text-align: left; border-bottom: 2px solid #e5e7eb;">Product</th>
+                <th style="padding: 10px; text-align: center; border-bottom: 2px solid #e5e7eb;">Quantity</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${itemsHtml}
+            </tbody>
+          </table>
+
+          <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="color: #16a34a; margin-top: 0;">Shipping Address</h3>
+            <p>${order.shippingAddress?.fullName || ''}<br>
+            ${order.shippingAddress?.addressLine1 || ''}<br>
+            ${order.shippingAddress?.addressLine2 ? order.shippingAddress.addressLine2 + '<br>' : ''}
+            ${order.shippingAddress?.city || ''}, ${order.shippingAddress?.state || ''} - ${order.shippingAddress?.postalCode || ''}<br>
+            Phone: ${order.shippingAddress?.phone || ''}</p>
+          </div>
+
+          <p>We'll notify you once your order is out for delivery. You can track your order status in your account.</p>
+          <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">Best regards,<br>Biharinath Organic Farms Team</p>
+        </div>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+    return true;
+  } catch (error) {
+    console.error('Email sending error:', error);
+    return false;
+  }
+}
+
+export async function sendOrderOutForDeliveryEmail(order: any, userEmail: string, userName: string) {
+  try {
+    const itemsHtml = order.items.map((item: any) => `
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;">${item.productName}</td>
+        <td style="padding: 10px; border-bottom: 1px solid #e5e7eb; text-align: center;">${item.quantity}</td>
+      </tr>
+    `).join('');
+
+    // Check if payment is pending or not completed
+    const paymentPending = order.paymentStatus === 'pending' || order.paymentStatus !== 'completed';
+    const paymentMessage = paymentPending ? `
+      <div style="background-color: #fef3c7; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b;">
+        <p style="margin: 0; font-weight: bold; color: #92400e;">💳 Payment Required</p>
+        <p style="margin: 5px 0 0 0;">Please prepare <strong>₹${order.totalAmount}</strong> for payment upon delivery.</p>
+        <p style="margin: 5px 0 0 0;">Our delivery person will collect the payment when your order arrives.</p>
+      </div>
+    ` : '';
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER || 'biharinath.org.farm@gmail.com',
+      to: userEmail,
+      subject: `Your Order is Out for Delivery - ${order.orderNumber} - Biharinath Organic Farms`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #16a34a; text-align: center;">🚚 Your Order is Out for Delivery!</h2>
+          <p>Dear ${userName},</p>
+          <p>Great news! Your order <strong>#${order.orderNumber}</strong> is now out for delivery and should reach you soon.</p>
+          
+          <div style="background-color: #f0fdf4; padding: 20px; border-radius: 8px; margin: 20px 0; border: 2px solid #16a34a;">
+            <h3 style="color: #16a34a; margin-top: 0;">Order Details</h3>
+            <p><strong>Order Number:</strong> ${order.orderNumber}</p>
+            <p><strong>Order Date:</strong> ${new Date(order.createdAt).toLocaleDateString('en-IN')}</p>
+            <p><strong>Total Amount:</strong> ₹${order.totalAmount}</p>
+            <p><strong>Payment Status:</strong> ${order.paymentStatus === 'completed' ? 'Paid' : 'Pending'}</p>
+            ${order.trackingNumber ? `<p><strong>Tracking Number:</strong> ${order.trackingNumber}</p>` : ''}
+            ${order.courierName ? `<p><strong>Courier:</strong> ${order.courierName}</p>` : ''}
+          </div>
+
+          ${paymentMessage}
+
+          <h3 style="color: #16a34a;">Items in Your Order</h3>
+          <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+            <thead>
+              <tr style="background-color: #f3f4f6;">
+                <th style="padding: 10px; text-align: left; border-bottom: 2px solid #e5e7eb;">Product</th>
+                <th style="padding: 10px; text-align: center; border-bottom: 2px solid #e5e7eb;">Quantity</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${itemsHtml}
+            </tbody>
+          </table>
+
+          <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="color: #16a34a; margin-top: 0;">Delivery Address</h3>
+            <p>${order.shippingAddress?.fullName || ''}<br>
+            ${order.shippingAddress?.addressLine1 || ''}<br>
+            ${order.shippingAddress?.addressLine2 ? order.shippingAddress.addressLine2 + '<br>' : ''}
+            ${order.shippingAddress?.city || ''}, ${order.shippingAddress?.state || ''} - ${order.shippingAddress?.postalCode || ''}<br>
+            Phone: ${order.shippingAddress?.phone || ''}</p>
+          </div>
+
+          <div style="background-color: #fef3c7; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <p><strong>📦 Delivery Instructions:</strong></p>
+            <ul>
+              <li>Please ensure someone is available to receive the order</li>
+              <li>Keep your phone nearby as the delivery person may contact you</li>
+              <li>Check the items upon delivery to ensure everything is correct</li>
+              ${paymentPending ? '<li>Have the payment amount ready (₹' + order.totalAmount + ')</li>' : ''}
+            </ul>
+          </div>
+
+          <p>We hope you enjoy your fresh organic products!</p>
+          <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">Best regards,<br>Biharinath Organic Farms Team</p>
+        </div>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+    return true;
+  } catch (error) {
+    console.error('Email sending error:', error);
+    return false;
+  }
+}
+
+export async function sendOrderDeliveredEmail(order: any, userEmail: string, userName: string) {
+  try {
+    const itemsHtml = order.items.map((item: any) => `
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;">${item.productName}</td>
+        <td style="padding: 10px; border-bottom: 1px solid #e5e7eb; text-align: center;">${item.quantity}</td>
+        <td style="padding: 10px; border-bottom: 1px solid #e5e7eb; text-align: right;">₹${item.totalPrice}</td>
+      </tr>
+    `).join('');
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER || 'biharinath.org.farm@gmail.com',
+      to: userEmail,
+      subject: `Order Delivered - ${order.orderNumber} - Biharinath Organic Farms`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #16a34a; text-align: center;">✅ Your Order Has Been Delivered!</h2>
+          <p>Dear ${userName},</p>
+          <p>We're excited to let you know that your order <strong>#${order.orderNumber}</strong> has been successfully delivered!</p>
+          
+          <div style="background-color: #f0fdf4; padding: 20px; border-radius: 8px; margin: 20px 0; border: 2px solid #16a34a;">
+            <h3 style="color: #16a34a; margin-top: 0;">Order Summary</h3>
+            <p><strong>Order Number:</strong> ${order.orderNumber}</p>
+            <p><strong>Order Date:</strong> ${new Date(order.createdAt).toLocaleDateString('en-IN')}</p>
+            <p><strong>Delivered On:</strong> ${new Date().toLocaleDateString('en-IN')}</p>
+            <p><strong>Total Amount:</strong> ₹${order.totalAmount}</p>
+          </div>
+
+          <h3 style="color: #16a34a;">Items Delivered</h3>
+          <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+            <thead>
+              <tr style="background-color: #f3f4f6;">
+                <th style="padding: 10px; text-align: left; border-bottom: 2px solid #e5e7eb;">Product</th>
+                <th style="padding: 10px; text-align: center; border-bottom: 2px solid #e5e7eb;">Quantity</th>
+                <th style="padding: 10px; text-align: right; border-bottom: 2px solid #e5e7eb;">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${itemsHtml}
+            </tbody>
+          </table>
+
+          <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <div style="display: flex; justify-content: space-between; margin: 5px 0;">
+              <span>Subtotal:</span>
+              <span>₹${order.subtotal}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin: 5px 0;">
+              <span>Shipping:</span>
+              <span>${order.shippingAmount === 0 ? 'FREE' : `₹${order.shippingAmount}`}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin: 5px 0;">
+              <span>Tax (5%):</span>
+              <span>₹${order.taxAmount}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin: 5px 0; font-weight: bold; font-size: 18px; border-top: 2px solid #e5e7eb; padding-top: 10px;">
+              <span>Total:</span>
+              <span style="color: #16a34a;">₹${order.totalAmount}</span>
+            </div>
+          </div>
+
+          <div style="background-color: #fef3c7; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <p><strong>💡 What's Next?</strong></p>
+            <ul>
+              <li>Please check all items to ensure everything is correct</li>
+              <li>Store perishable items in the refrigerator as needed</li>
+              <li>We'd love to hear your feedback! Consider leaving a review for the products you purchased</li>
+              <li>If you have any issues with your order, please contact us immediately</li>
+            </ul>
+          </div>
+
+          <p>Thank you for choosing Biharinath Organic Farms. We hope you enjoy your fresh, organic products!</p>
+          <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">Best regards,<br>Biharinath Organic Farms Team</p>
+        </div>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+    return true;
+  } catch (error) {
+    console.error('Email sending error:', error);
+    return false;
+  }
+}
+
 export async function sendReviewConfirmationEmail(
   review: any,
   userEmail: string,

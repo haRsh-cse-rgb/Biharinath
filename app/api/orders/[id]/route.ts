@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import connectToDB from '@/lib/mongodb';
 import Order from '@/models/Order';
 import User from '@/models/User';
-import { sendOrderCancellationEmail } from '@/lib/email';
+import { sendOrderCancellationEmail, sendOrderShippedEmail, sendOrderOutForDeliveryEmail, sendOrderDeliveredEmail } from '@/lib/email';
 
 export async function GET(_request: Request, { params }: { params: { id: string } }) {
   try {
@@ -35,21 +35,49 @@ export async function PATCH(request: Request, { params }: { params: { id: string
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
 
-    const wasCancelled = order.status === 'cancelled';
     const isBeingCancelled = status === 'cancelled' && order.status !== 'cancelled';
+    const isBeingShipped = status === 'shipped' && order.status !== 'shipped';
+    const isBeingOutForDelivery = status === 'out_for_delivery' && order.status !== 'out_for_delivery';
+    const isBeingDelivered = status === 'delivered' && order.status !== 'delivered';
 
     if (status) order.status = status;
     if (paymentStatus) order.paymentStatus = paymentStatus;
 
     await order.save();
 
-    // Send cancellation email if order is being cancelled
-    if (isBeingCancelled) {
-      const user = await User.findById(order.userId);
-      if (user) {
-        const populatedOrder = await Order.findById(params.id);
+    // Get user info for email sending
+    const user = await User.findById(order.userId);
+    
+    if (user) {
+      const populatedOrder = await Order.findById(params.id)
+        .populate('userId', 'fullName email phone')
+        .populate({ path: 'items.productId', model: 'Product' });
+
+      // Send cancellation email if order is being cancelled
+      if (isBeingCancelled) {
         sendOrderCancellationEmail(populatedOrder, user.email, user.fullName).catch(err =>
           console.error('Failed to send cancellation email:', err)
+        );
+      }
+
+      // Send shipped email if order status changes to shipped
+      if (isBeingShipped) {
+        sendOrderShippedEmail(populatedOrder, user.email, user.fullName).catch(err =>
+          console.error('Failed to send shipped email:', err)
+        );
+      }
+
+      // Send out for delivery email if order status changes to out_for_delivery
+      if (isBeingOutForDelivery) {
+        sendOrderOutForDeliveryEmail(populatedOrder, user.email, user.fullName).catch(err =>
+          console.error('Failed to send out for delivery email:', err)
+        );
+      }
+
+      // Send delivered email if order status changes to delivered
+      if (isBeingDelivered) {
+        sendOrderDeliveredEmail(populatedOrder, user.email, user.fullName).catch(err =>
+          console.error('Failed to send delivered email:', err)
         );
       }
     }
