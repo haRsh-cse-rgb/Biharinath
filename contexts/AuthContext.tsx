@@ -14,7 +14,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: any }>;
-  signIn: (email: string, password: string) => Promise<{ error: any }>;
+  signIn: (email: string, password: string) => Promise<{ error: any; errorType?: string | null }>;
   signOut: () => Promise<void>;
   isAdmin: boolean;
 }
@@ -79,7 +79,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(data.user);
       return { error: null, errorType: null };
     } catch (error) {
-      return { error: 'Failed to sign in' };
+      return { error: 'Failed to sign in', errorType: null };
     }
   };
 
