@@ -136,8 +136,8 @@ export default function CheckoutPage() {
       const qty = Number(item.quantity) || 0;
       return sum + unitPrice * qty;
     }, 0);
-    // const shippingAmount = subtotal >= 500 ? 0 : 50;
-    const shippingAmount = 0;
+    const shippingAmount = subtotal >= 500 ? 0 : 50;
+    // const shippingAmount = 0;
     const taxAmount = Math.round(subtotal * 0.05);
     const totalAmount = subtotal + shippingAmount + taxAmount;
 

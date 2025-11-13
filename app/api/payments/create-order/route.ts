@@ -58,8 +58,8 @@ export async function POST(request: Request) {
       };
     });
 
-    // const shippingAmount = subtotal >= 500 ? 0 : 50;
-    const shippingAmount = 0; // Testing - shipping disabled
+    const shippingAmount = subtotal >= 500 ? 0 : 50;
+    // const shippingAmount = 0; // Testing - shipping disabled
     const taxAmount = Math.round(subtotal * 0.05);
     const totalAmount = subtotal + shippingAmount + taxAmount;
 

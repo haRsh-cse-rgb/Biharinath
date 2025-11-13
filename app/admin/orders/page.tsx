@@ -3,14 +3,17 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Eye, ArrowLeft } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Eye, ArrowLeft, Search } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 
 function AdminOrdersContent() {
   const [orders, setOrders] = useState<any[]>([]);
+  const [allOrders, setAllOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
   const searchParams = useSearchParams();
   const userId = searchParams.get('userId');
 
@@ -20,6 +23,7 @@ function AdminOrdersContent() {
         const url = userId ? `/api/orders?userId=${userId}` : '/api/orders';
         const response = await fetch(url);
         const data = await response.json();
+        setAllOrders(data);
         setOrders(data);
       } catch (error) {
         console.error('Failed to fetch orders:', error);
@@ -30,6 +34,28 @@ function AdminOrdersContent() {
 
     fetchOrders();
   }, [userId]);
+
+  useEffect(() => {
+    if (!searchTerm.trim()) {
+      setOrders(allOrders);
+      return;
+    }
+
+    const filtered = allOrders.filter((order: any) => {
+      const orderNumber = order.orderNumber?.toLowerCase() || '';
+      const customerName = order.shippingAddress?.fullName?.toLowerCase() || '';
+      const customerEmail = order.userId?.email?.toLowerCase() || '';
+      const search = searchTerm.toLowerCase();
+
+      return (
+        orderNumber.includes(search) ||
+        customerName.includes(search) ||
+        customerEmail.includes(search)
+      );
+    });
+
+    setOrders(filtered);
+  }, [searchTerm, allOrders]);
 
   return (
     <div className="min-h-screen bg-gray-50 pt-24 pb-12">
@@ -46,6 +72,21 @@ function AdminOrdersContent() {
           </h1>
         </div>
 
+        <Card className="mb-6">
+          <CardContent className="p-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+              <Input
+                type="text"
+                placeholder="Search by order number, customer name, or email..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </CardContent>
+        </Card>
+
         {loading ? (
           <Card>
             <CardContent className="py-12 text-center">
@@ -55,7 +96,18 @@ function AdminOrdersContent() {
         ) : orders.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center">
-              <p className="text-gray-500">No orders yet</p>
+              <p className="text-gray-500">
+                {searchTerm ? 'No orders found matching your search' : 'No orders yet'}
+              </p>
+              {searchTerm && (
+                <Button
+                  variant="outline"
+                  className="mt-4"
+                  onClick={() => setSearchTerm('')}
+                >
+                  Clear Search
+                </Button>
+              )}
             </CardContent>
           </Card>
         ) : (

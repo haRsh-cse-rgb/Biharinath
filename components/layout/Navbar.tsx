@@ -115,8 +115,9 @@ export function Navbar() {
           </div>
 
           <div className="flex items-center space-x-1 sm:space-x-2 md:space-x-4 flex-shrink-0">
+            {/* Desktop Search - shown in navbar */}
             {isSearchOpen ? (
-              <form onSubmit={handleSearch} className="flex items-center gap-1 sm:gap-2 flex-1 min-w-0">
+              <form onSubmit={handleSearch} className="hidden md:flex items-center gap-1 sm:gap-2 flex-1 min-w-0">
                 <Input
                   type="text"
                   placeholder="Search products..."
@@ -154,6 +155,21 @@ export function Navbar() {
                 onClick={() => setIsSearchOpen(true)}
               >
                 <Search className="h-5 w-5" />
+              </Button>
+            )}
+            
+            {/* Mobile - Show close button when search is open */}
+            {isSearchOpen && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="md:hidden text-white hover:text-green-200 hover:bg-green-600 flex-shrink-0"
+                onClick={() => {
+                  setIsSearchOpen(false);
+                  setSearchTerm('');
+                }}
+              >
+                <X className="h-5 w-5" />
               </Button>
             )}
 
@@ -254,6 +270,44 @@ export function Navbar() {
           </div>
         </div>
       </div>
+
+      {/* Mobile Search Bar - Below Navbar */}
+      {isSearchOpen && (
+        <div className="md:hidden bg-green-700/95 backdrop-blur-sm border-t border-green-600/50">
+          <div className="max-w-7xl mx-auto px-4 py-3">
+            <form onSubmit={handleSearch} className="flex items-center gap-2">
+              <Input
+                type="text"
+                placeholder="Search products..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="flex-1 bg-white/90 backdrop-blur-sm text-gray-900 border-white/20"
+                autoFocus
+              />
+              <Button
+                type="submit"
+                variant="ghost"
+                size="icon"
+                className="text-white hover:text-green-200 hover:bg-green-600/50 flex-shrink-0"
+              >
+                <Search className="h-5 w-5" />
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="text-white hover:text-green-200 hover:bg-green-600/50 flex-shrink-0"
+                onClick={() => {
+                  setIsSearchOpen(false);
+                  setSearchTerm('');
+                }}
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </form>
+          </div>
+        </div>
+      )}
 
       {isMobileMenuOpen && (
         <div className="md:hidden bg-green-800 border-t border-green-600 shadow-lg">

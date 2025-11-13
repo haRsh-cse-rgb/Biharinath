@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import { useEffect, useState } from 'react';
 import { Product } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -15,11 +16,86 @@ interface ProductCardProps {
 export function ProductCard({ product }: ProductCardProps) {
   const { toast } = useToast();
   const { user } = useAuth();
+  const [wishlisted, setWishlisted] = useState(false);
+  const [wishBusy, setWishBusy] = useState(false);
   const images = product.images as string[];
   const mainImage = images && images.length > 0 ? images[0] : '/placeholder-product.jpg';
   const discount = product.compareAtPrice
     ? Math.round(((product.compareAtPrice - product.price) / product.compareAtPrice) * 100)
     : 0;
+
+  // Check if product is in wishlist
+  useEffect(() => {
+    const checkWishlist = async () => {
+      if (!user?._id || !product._id) {
+        setWishlisted(false);
+        return;
+      }
+      try {
+        const res = await fetch(`/api/wishlist?userId=${user._id}`);
+        if (res.ok) {
+          const data = await res.json();
+          const ids = (data?.items || []).map((it: any) => (it.productId?._id || it.productId)?.toString());
+          setWishlisted(ids.includes(product._id));
+        }
+      } catch {
+        // ignore
+      }
+    };
+    checkWishlist();
+  }, [user?._id, product._id]);
+
+  const toggleWishlist = async () => {
+    if (!user) {
+      toast({
+        title: "Please login",
+        description: "You need to login to add items to wishlist",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (wishBusy) return;
+    setWishBusy(true);
+
+    try {
+      const response = await fetch('/api/wishlist', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: user._id,
+          productId: product._id,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const ids = (data?.items || []).map((it: any) => (it.productId?._id || it.productId)?.toString());
+        const isNowWishlisted = ids.includes(product._id);
+        setWishlisted(isNowWishlisted);
+        toast({
+          title: isNowWishlisted ? "Added to wishlist" : "Removed from wishlist",
+          description: `${product.name} ${isNowWishlisted ? 'added to' : 'removed from'} your wishlist`,
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to update wishlist",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update wishlist",
+        variant: "destructive"
+      });
+    } finally {
+      setWishBusy(false);
+    }
+  };
 
   const handleAddToCart = async () => {
     if (!user) {
@@ -123,8 +199,14 @@ export function ProductCard({ product }: ProductCardProps) {
           <ShoppingCart className="mr-2 h-4 w-4" />
           Add to Cart
         </Button>
-        <Button variant="outline" size="icon">
-          <Heart className="h-4 w-4" />
+        <Button 
+          variant="outline" 
+          size="icon"
+          onClick={toggleWishlist}
+          disabled={wishBusy}
+          className={wishlisted ? "bg-red-50 border-red-200 hover:bg-red-100" : ""}
+        >
+          <Heart className={`h-4 w-4 ${wishlisted ? "fill-red-500 text-red-500" : ""}`} />
         </Button>
       </CardFooter>
     </Card>

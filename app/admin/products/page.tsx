@@ -20,6 +20,7 @@ import { useToast } from '@/hooks/use-toast';
 // Cloudinary uploads handled via /api/upload
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<any[]>([]);
@@ -41,6 +42,7 @@ export default function AdminProductsPage() {
     sku: '',
     category: '',
     images: [] as string[],
+    isFeatured: false,
   });
   const [imageInput, setImageInput] = useState('');
   const [uploading, setUploading] = useState(false);
@@ -133,6 +135,7 @@ export default function AdminProductsPage() {
       sku: '',
       category: '',
       images: [],
+      isFeatured: false,
     });
     setImageInput('');
     setPreviewImages([]);
@@ -277,6 +280,7 @@ export default function AdminProductsPage() {
       sku: product.sku,
       category: product.categoryId?.toString() || product.category?._id?.toString() || product.category || '',
       images: existingImages,
+      isFeatured: product.isFeatured || false,
     });
     setPreviewImages(existingImages);
     setIsEditDialogOpen(true);
@@ -498,6 +502,16 @@ export default function AdminProductsPage() {
                       </Button>
                     </div>
                   </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="isFeatured"
+                    checked={formData.isFeatured}
+                    onCheckedChange={(checked) => setFormData({ ...formData, isFeatured: checked })}
+                  />
+                  <Label htmlFor="isFeatured" className="cursor-pointer">
+                    Mark as Featured Product
+                  </Label>
                 </div>
                 <div>
                   <Label>Product Images</Label>
@@ -723,6 +737,16 @@ export default function AdminProductsPage() {
                     </Button>
                   </div>
                 </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="edit-isFeatured"
+                  checked={formData.isFeatured}
+                  onCheckedChange={(checked) => setFormData({ ...formData, isFeatured: checked })}
+                />
+                <Label htmlFor="edit-isFeatured" className="cursor-pointer">
+                  Mark as Featured Product
+                </Label>
               </div>
               <div>
                 <Label>Product Images</Label>
