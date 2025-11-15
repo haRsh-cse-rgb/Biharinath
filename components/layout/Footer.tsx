@@ -1,7 +1,17 @@
+"use client";
+
 import Link from 'next/link';
 import { Facebook, Twitter, Instagram, Mail, Phone, MapPin } from 'lucide-react';
+import { usePlatform } from '@/lib/platform';
 
 export function Footer() {
+  const { isNative, isPWA } = usePlatform();
+  
+  // Hide footer on native apps and PWA
+  if (isNative || isPWA) {
+    return null;
+  }
+
   return (
     <footer className="bg-gray-900 text-gray-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">

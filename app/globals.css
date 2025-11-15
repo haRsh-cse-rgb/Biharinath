@@ -81,6 +81,117 @@
   }
 }
 
+/* Platform-specific styles */
+.platform-ios {
+  /* iOS specific styles */
+  --safe-area-inset-top: env(safe-area-inset-top);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom);
+  --safe-area-inset-left: env(safe-area-inset-left);
+  --safe-area-inset-right: env(safe-area-inset-right);
+}
+
+.platform-android {
+  /* Android specific styles */
+  --safe-area-inset-top: env(safe-area-inset-top);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom);
+  --safe-area-inset-left: env(safe-area-inset-left);
+  --safe-area-inset-right: env(safe-area-inset-right);
+}
+
+.platform-pwa {
+  /* PWA specific styles */
+  --safe-area-inset-top: env(safe-area-inset-top);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom);
+  --safe-area-inset-left: env(safe-area-inset-left);
+  --safe-area-inset-right: env(safe-area-inset-right);
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* App-specific styles (Native & PWA) */
+.is-native main,
+.platform-pwa main {
+  padding-bottom: 5rem; /* Space for bottom navigation (64px + safe area) */
+  overflow-x: hidden; /* Prevent horizontal overflow */
+}
+
+/* Prevent overflow on all pages */
+body {
+  overflow-x: hidden;
+}
+
+main {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/* Safe area support for bottom nav */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.platform-web {
+  /* Web browser specific styles */
+}
+
+.is-native {
+  /* Native app styles */
+  /* Remove default browser styles */
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.is-native * {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.is-native input,
+.is-native textarea,
+.is-native [contenteditable] {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* Native app specific adjustments */
+.is-native nav {
+  padding-top: var(--safe-area-inset-top, 0);
+}
+
+.is-native main {
+  padding-bottom: var(--safe-area-inset-bottom, 0);
+}
+
+/* PWA specific adjustments */
+.is-pwa {
+  /* PWA can have slightly different styling */
+  /* More app-like feel */
+}
+
+.is-pwa nav {
+  /* PWA navbar adjustments */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Platform-specific component styles */
+.platform-ios .navbar,
+.platform-android .navbar {
+  /* Native app navbar - can be different */
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+}
+
+.platform-pwa .navbar {
+  /* PWA navbar - slightly different */
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+  backdrop-filter: blur(10px);
+}
+
+.platform-web .navbar {
+  /* Web navbar - standard */
+  background: #16a34a;
+}
+
 @media print {
   body {
     background-color: white;

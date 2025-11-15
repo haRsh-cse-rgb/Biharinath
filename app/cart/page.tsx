@@ -108,17 +108,17 @@ export default function CartPage() {
   return (
     <>
       <PageTitle title="Shopping Cart" />
-      <div className="min-h-screen bg-gray-50 pt-24 pb-12">
+      <div className="min-h-screen bg-gray-50 pt-24 pb-20 md:pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold mb-8">Shopping Cart</h1>
+        <h1 className="text-2xl md:text-3xl font-bold mb-8">Shopping Cart</h1>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
           <div className="lg:col-span-2">
             <Card>
-              <CardContent className="p-6">
+              <CardContent className="p-4 sm:p-6">
                 {cartItems.map((item) => (
-                  <div key={item._id} className="flex items-center space-x-4 py-4 border-b last:border-0">
-                    <div className="relative h-24 w-24 flex-shrink-0">
+                  <div key={item._id} className="flex flex-col sm:flex-row items-start sm:items-center gap-4 py-4 border-b last:border-0">
+                    <div className="relative h-20 w-20 sm:h-24 sm:w-24 flex-shrink-0">
                       <Image 
                         src={item.productId?.images?.[0] || '/placeholder-image.jpg'} 
                         alt={item.productId?.name || 'Product'} 
@@ -127,29 +127,31 @@ export default function CartPage() {
                         className="object-cover rounded" 
                       />
                     </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-lg">{item.productId?.name || 'Product'}</h3>
-                      <p className="text-gray-600">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-base sm:text-lg truncate">{item.productId?.name || 'Product'}</h3>
+                      <p className="text-sm text-gray-600">
                         ₹{Number(item.productId?.price) || 0} per {item.productId?.unit || 'unit'}
                       </p>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <Button variant="outline" size="sm" onClick={() => updateQuantity(item._id, -1)}>
-                        <Minus className="h-4 w-4" />
-                      </Button>
-                      <span className="w-12 text-center font-semibold">{Number(item.quantity) || 0}</span>
-                      <Button variant="outline" size="sm" onClick={() => updateQuantity(item._id, 1)}>
-                        <Plus className="h-4 w-4" />
+                    <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto justify-between sm:justify-start">
+                      <div className="flex items-center space-x-2">
+                        <Button variant="outline" size="sm" onClick={() => updateQuantity(item._id, -1)}>
+                          <Minus className="h-4 w-4" />
+                        </Button>
+                        <span className="w-12 text-center font-semibold">{Number(item.quantity) || 0}</span>
+                        <Button variant="outline" size="sm" onClick={() => updateQuantity(item._id, 1)}>
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <div className="text-right sm:text-left">
+                        <p className="font-bold text-sm sm:text-base">
+                          ₹{((Number(item.productId?.price) || 0) * (Number(item.quantity) || 0)).toFixed(2)}
+                        </p>
+                      </div>
+                      <Button variant="ghost" size="sm" onClick={() => removeItem(item._id)} className="flex-shrink-0">
+                        <Trash2 className="h-4 w-4 text-red-500" />
                       </Button>
                     </div>
-                    <div className="text-right w-24">
-                      <p className="font-bold">
-                        ₹{((Number(item.productId?.price) || 0) * (Number(item.quantity) || 0)).toFixed(2)}
-                      </p>
-                    </div>
-                    <Button variant="ghost" size="sm" onClick={() => removeItem(item._id)}>
-                      <Trash2 className="h-4 w-4 text-red-500" />
-                    </Button>
                   </div>
                 ))}
               </CardContent>
@@ -157,8 +159,8 @@ export default function CartPage() {
           </div>
 
           <div>
-            <Card className="sticky top-24">
-              <CardContent className="p-6">
+            <Card className="lg:sticky lg:top-24">
+              <CardContent className="p-4 sm:p-6">
                 <h2 className="text-xl font-bold mb-4">Order Summary</h2>
                 <div className="space-y-3">
                   <div className="flex justify-between">

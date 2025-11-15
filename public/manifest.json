@@ -1,0 +1,43 @@
+{
+  "name": "Biharinath Organic Farms",
+  "short_name": "Biharinath",
+  "description": "Fresh, healthy, and naturally grown organic produce",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#16a34a",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/logo.jpeg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo.jpeg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["food", "shopping", "lifestyle"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Products",
+      "short_name": "Products",
+      "description": "Browse our organic products",
+      "url": "/products",
+      "icons": [{ "src": "/logo.jpeg", "sizes": "96x96" }]
+    },
+    {
+      "name": "Book Visit",
+      "short_name": "Visit",
+      "description": "Book a farm visit",
+      "url": "/book-visit",
+      "icons": [{ "src": "/logo.jpeg", "sizes": "96x96" }]
+    }
+  ]
+}
+

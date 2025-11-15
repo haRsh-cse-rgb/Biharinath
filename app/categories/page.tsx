@@ -64,11 +64,11 @@ export default function CategoriesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-white pt-24 pb-12">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-white pt-24 pb-20 md:pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-12">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-4xl font-bold text-gray-900">Shop by Category</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Shop by Category</h1>
             <Link href="/">
               <Button variant="outline" size="sm">
                 <Home className="h-4 w-4 mr-2" />
@@ -76,7 +76,7 @@ export default function CategoriesPage() {
               </Button>
             </Link>
           </div>
-          <p className="text-lg text-gray-600">
+          <p className="text-base md:text-lg text-gray-600">
             Browse our wide selection of fresh, organic products organized by category
           </p>
         </div>

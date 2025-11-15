@@ -72,11 +72,11 @@ function ProductsContent() {
   return (
     <>
       <PageTitle title="Products" />
-      <div className="min-h-screen bg-gray-50 pt-24 pb-12">
+      <div className="min-h-screen bg-gray-50 pt-24 pb-20 md:pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-4xl font-bold text-gray-900">Our Organic Products</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Our Organic Products</h1>
             <Link href="/">
               <Button variant="outline" size="sm">
                 <Home className="h-4 w-4 mr-2" />
@@ -84,7 +84,7 @@ function ProductsContent() {
               </Button>
             </Link>
           </div>
-          <p className="text-lg text-gray-600">Fresh, healthy, and naturally grown produce from Biharinath Organic Farm</p>
+          <p className="text-base md:text-lg text-gray-600">Fresh, healthy, and naturally grown produce from Biharinath Organic Farm</p>
         </div>
 
         <div className="flex flex-col md:flex-row gap-4 mb-8">

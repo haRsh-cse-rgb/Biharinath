@@ -164,9 +164,9 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-24 pb-12">
+    <div className="min-h-screen bg-gray-50 pt-24 pb-20 md:pb-12">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold mb-8">My Account</h1>
+        <h1 className="text-2xl md:text-3xl font-bold mb-8">My Profile</h1>
 
         <Card>
           <CardHeader>

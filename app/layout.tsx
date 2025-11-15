@@ -3,8 +3,11 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { Toaster } from '@/components/ui/toaster';
-import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
+import { PlatformWrapper } from '@/components/platform/PlatformWrapper';
+import { NavigationWrapper } from '@/components/layout/NavigationWrapper';
+import { SplashScreen } from '@/components/layout/SplashScreen';
+import { InstallPWA } from '@/components/layout/InstallPWA';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -19,6 +22,13 @@ export const metadata: Metadata = {
     shortcut: '/logo.jpeg',
     apple: '/logo.jpeg',
   },
+  manifest: '/manifest.json',
+  themeColor: '#16a34a',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Biharinath Organic Farms',
+  },
 };
 
 export default function RootLayout({
@@ -28,15 +38,22 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+      </head>
       <body className={inter.className}>
-        <AuthProvider>
-          <Navbar />
-          <main className="min-h-screen">
-            {children}
-          </main>
-          <Footer />
-          <Toaster />
-        </AuthProvider>
+        <PlatformWrapper>
+          <AuthProvider>
+            <SplashScreen />
+            <NavigationWrapper />
+            <main className="min-h-screen">
+              {children}
+            </main>
+            <Footer />
+            <InstallPWA />
+            <Toaster />
+          </AuthProvider>
+        </PlatformWrapper>
       </body>
     </html>
   );
