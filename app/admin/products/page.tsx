@@ -38,6 +38,7 @@ export default function AdminProductsPage() {
     slug: '',
     description: '',
     price: '',
+    unit: 'kg',
     stockQuantity: '',
     sku: '',
     category: '',
@@ -131,6 +132,7 @@ export default function AdminProductsPage() {
       slug: '',
       description: '',
       price: '',
+      unit: 'kg',
       stockQuantity: '',
       sku: '',
       category: '',
@@ -276,6 +278,7 @@ export default function AdminProductsPage() {
       slug: product.slug || '',
       description: product.description || '',
       price: product.price.toString(),
+      unit: product.unit || 'kg',
       stockQuantity: product.stockQuantity.toString(),
       sku: product.sku,
       category: product.categoryId?.toString() || product.category?._id?.toString() || product.category || '',
@@ -456,15 +459,33 @@ export default function AdminProductsPage() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="stock">Stock Quantity *</Label>
-                    <Input
-                      id="stock"
-                      type="number"
-                      required
-                      value={formData.stockQuantity}
-                      onChange={(e) => setFormData({ ...formData, stockQuantity: e.target.value })}
-                    />
+                    <Label htmlFor="unit">Price Per (Unit) *</Label>
+                    <Select value={formData.unit} onValueChange={(value) => setFormData({ ...formData, unit: value })}>
+                      <SelectTrigger id="unit">
+                        <SelectValue placeholder="Select unit" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="kg">kg</SelectItem>
+                        <SelectItem value="piece">piece</SelectItem>
+                        <SelectItem value="dozen">dozen</SelectItem>
+                        <SelectItem value="pack">pack</SelectItem>
+                        <SelectItem value="bunch">bunch</SelectItem>
+                        <SelectItem value="gram">gram</SelectItem>
+                        <SelectItem value="liter">liter</SelectItem>
+                        <SelectItem value="box">box</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
+                </div>
+                <div>
+                  <Label htmlFor="stock">Stock Quantity *</Label>
+                  <Input
+                    id="stock"
+                    type="number"
+                    required
+                    value={formData.stockQuantity}
+                    onChange={(e) => setFormData({ ...formData, stockQuantity: e.target.value })}
+                  />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -623,6 +644,7 @@ export default function AdminProductsPage() {
                     <p className="text-sm text-gray-600">{product.sku}</p>
                     <p className="text-sm">
                       <span className="font-semibold text-green-600">₹{product.price}</span>
+                      <span className="text-gray-500 ml-1">/{product.unit || 'kg'}</span>
                       <span className="text-gray-500 ml-2">Stock: {product.stockQuantity}</span>
                     </p>
                   </div>
@@ -691,15 +713,33 @@ export default function AdminProductsPage() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="edit-stock">Stock Quantity *</Label>
-                  <Input
-                    id="edit-stock"
-                    type="number"
-                    required
-                    value={formData.stockQuantity}
-                    onChange={(e) => setFormData({ ...formData, stockQuantity: e.target.value })}
-                  />
+                  <Label htmlFor="edit-unit">Price Per (Unit) *</Label>
+                  <Select value={formData.unit} onValueChange={(value) => setFormData({ ...formData, unit: value })}>
+                    <SelectTrigger id="edit-unit">
+                      <SelectValue placeholder="Select unit" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="kg">kg</SelectItem>
+                      <SelectItem value="piece">piece</SelectItem>
+                      <SelectItem value="dozen">dozen</SelectItem>
+                      <SelectItem value="pack">pack</SelectItem>
+                      <SelectItem value="bunch">bunch</SelectItem>
+                      <SelectItem value="gram">gram</SelectItem>
+                      <SelectItem value="liter">liter</SelectItem>
+                      <SelectItem value="box">box</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
+              </div>
+              <div>
+                <Label htmlFor="edit-stock">Stock Quantity *</Label>
+                <Input
+                  id="edit-stock"
+                  type="number"
+                  required
+                  value={formData.stockQuantity}
+                  onChange={(e) => setFormData({ ...formData, stockQuantity: e.target.value })}
+                />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>

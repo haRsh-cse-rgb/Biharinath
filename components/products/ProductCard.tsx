@@ -182,6 +182,7 @@ export function ProductCard({ product }: ProductCardProps) {
           <span className="text-2xl font-bold text-gray-900">
             ₹{product.price.toLocaleString()}
           </span>
+          <span className="text-sm text-gray-500">/{product.unit || 'kg'}</span>
           {product.compareAtPrice && (
             <span className="text-lg text-gray-400 line-through">
               ₹{product.compareAtPrice.toLocaleString()}

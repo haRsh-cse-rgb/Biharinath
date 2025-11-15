@@ -166,7 +166,7 @@ function ProductsContent() {
                         ₹{product.compareAtPrice}
                       </span>
                     )}
-                    <span className="text-sm text-gray-500">/{product.unit}</span>
+                    <span className="text-sm text-gray-500">/{product.unit || 'kg'}</span>
                   </div>
                 </CardContent>
 

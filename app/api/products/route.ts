@@ -24,7 +24,7 @@ export async function GET(request: Request) {
     if (featured === 'true') query.isFeatured = true;
     if (search) query.name = { $regex: search, $options: 'i' };
 
-    const products = await Product.find(query).select('_id name slug description price stockQuantity sku images').sort({ createdAt: -1 });
+    const products = await Product.find(query).select('_id name slug description price compareAtPrice unit stockQuantity sku images isFeatured').sort({ createdAt: -1 });
     return NextResponse.json(products);
   } catch (error) {
     console.error('GET /api/products error:', error);

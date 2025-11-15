@@ -207,7 +207,7 @@ export default function ProductDetailPage() {
                   ₹{product.compareAtPrice}
                 </span>
               )}
-              <span className="text-xl text-gray-600">per {product.unit}</span>
+              <span className="text-xl text-gray-600">per {product.unit || 'kg'}</span>
             </div>
 
             <p className="text-lg text-gray-700 mb-6 leading-relaxed">
