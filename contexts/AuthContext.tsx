@@ -31,11 +31,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const checkAuth = async () => {
     try {
-      const response = await fetch('/api/auth/me');
+      const response = await fetch('/api/auth/me', {
+        credentials: 'include', // Important: include cookies in the request
+      });
+      
+      if (!response.ok) {
+        throw new Error('Auth check failed');
+      }
+      
       const data = await response.json();
-      setUser(data.user);
+      setUser(data.user || null);
     } catch (error) {
       console.error('Auth check error:', error);
+      setUser(null);
     } finally {
       setLoading(false);
     }
@@ -47,6 +55,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password, fullName }),
+        credentials: 'include', // Important: include cookies in the request
       });
 
       const data = await response.json();
@@ -68,6 +77,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
+        credentials: 'include', // Important: include cookies in the request
       });
 
       const data = await response.json();
@@ -85,13 +95,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' });
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include', // Important: include cookies in the request
+      });
       setUser(null);
       if (typeof window !== 'undefined') {
         window.location.href = '/';
       }
     } catch (error) {
       console.error('Logout error:', error);
+      setUser(null);
     }
   };
 

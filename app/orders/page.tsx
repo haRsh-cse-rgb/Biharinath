@@ -18,20 +18,42 @@ export default function OrdersPage() {
 
   useEffect(() => {
     const load = async () => {
-      if (!user?._id) return;
+      if (!user?._id) {
+        setLoading(false);
+        return;
+      }
       setLoading(true);
       try {
         const res = await fetch(`/api/orders?userId=${user._id}`);
         if (res.ok) {
           const data = await res.json();
-          setOrders(data || []);
+          // Handle both array and object responses
+          const ordersArray = Array.isArray(data) ? data : (data.orders || []);
+          setOrders(ordersArray);
+        } else {
+          const errorData = await res.json().catch(() => ({}));
+          console.error('Failed to fetch orders:', res.status, errorData);
+          toast({
+            title: 'Error',
+            description: errorData.error || 'Failed to load orders',
+            variant: 'destructive',
+          });
+          setOrders([]);
         }
+      } catch (error) {
+        console.error('Error fetching orders:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to load orders. Please try again.',
+          variant: 'destructive',
+        });
+        setOrders([]);
       } finally {
         setLoading(false);
       }
     };
     load();
-  }, [user?._id]);
+  }, [user?._id, toast]);
 
   const handleCancelOrder = async (orderId: string) => {
     if (!confirm('Are you sure you want to cancel this order?')) return;

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Order from '@/models/Order';
+import User from '@/models/User'; // Required for populate to work
 
 export async function GET(request: Request) {
   try {
@@ -12,9 +13,15 @@ export async function GET(request: Request) {
     const orders = await Order.find(query)
       .populate('userId', 'fullName email phone')
       .sort({ createdAt: -1 });
-    return NextResponse.json(orders);
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 });
+    
+    // Always return an array
+    return NextResponse.json(Array.isArray(orders) ? orders : []);
+  } catch (error: any) {
+    console.error('Error fetching orders:', error);
+    return NextResponse.json(
+      { error: error.message || 'Failed to fetch orders' },
+      { status: 500 }
+    );
   }
 }
 

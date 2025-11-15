@@ -13,20 +13,35 @@ function AdminOrdersContent() {
   const [orders, setOrders] = useState<any[]>([]);
   const [allOrders, setAllOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const searchParams = useSearchParams();
   const userId = searchParams.get('userId');
 
   useEffect(() => {
     const fetchOrders = async () => {
+      setError(null);
       try {
         const url = userId ? `/api/orders?userId=${userId}` : '/api/orders';
         const response = await fetch(url);
+        
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+          throw new Error(errorData.error || `Failed to fetch orders: ${response.status}`);
+        }
+        
         const data = await response.json();
-        setAllOrders(data);
-        setOrders(data);
-      } catch (error) {
+        
+        // Handle both array and object responses
+        const ordersArray = Array.isArray(data) ? data : (data.orders || []);
+        
+        setAllOrders(ordersArray);
+        setOrders(ordersArray);
+      } catch (error: any) {
         console.error('Failed to fetch orders:', error);
+        setError(error.message || 'Failed to load orders');
+        setAllOrders([]);
+        setOrders([]);
       } finally {
         setLoading(false);
       }
@@ -91,6 +106,34 @@ function AdminOrdersContent() {
           <Card>
             <CardContent className="py-12 text-center">
               <p className="text-gray-500">Loading orders...</p>
+            </CardContent>
+          </Card>
+        ) : error ? (
+          <Card>
+            <CardContent className="py-12 text-center">
+              <p className="text-red-600 font-semibold mb-2">Error loading orders</p>
+              <p className="text-sm text-gray-600 mb-4">{error}</p>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setLoading(true);
+                  setError(null);
+                  const url = userId ? `/api/orders?userId=${userId}` : '/api/orders';
+                  fetch(url)
+                    .then(res => res.json())
+                    .then(data => {
+                      const ordersArray = Array.isArray(data) ? data : (data.orders || []);
+                      setAllOrders(ordersArray);
+                      setOrders(ordersArray);
+                    })
+                    .catch(err => {
+                      setError(err.message || 'Failed to load orders');
+                    })
+                    .finally(() => setLoading(false));
+                }}
+              >
+                Retry
+              </Button>
             </CardContent>
           </Card>
         ) : orders.length === 0 ? (

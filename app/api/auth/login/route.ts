@@ -56,7 +56,7 @@ export async function POST(request: Request) {
     const token = jwt.sign(
       { userId: user._id, email: user.email, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: '7d' }
+      { expiresIn: '30d' } // Match cookie expiration
     );
 
     const response = NextResponse.json({
@@ -73,7 +73,8 @@ export async function POST(request: Request) {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7,
+      maxAge: 60 * 60 * 24 * 30, // 30 days instead of 7
+      path: '/', // Ensure cookie is available for all paths
     });
 
     console.log('Login: Success');
