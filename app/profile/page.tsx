@@ -204,9 +204,9 @@ export default function ProfilePage() {
                 placeholder="Enter your phone number"
               />
             </div>
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <Button 
-                className="bg-green-600 hover:bg-green-700"
+                className="bg-green-600 hover:bg-green-700 w-full sm:w-auto"
                 onClick={handleSaveProfile}
                 disabled={saving}
               >
@@ -214,7 +214,7 @@ export default function ProfilePage() {
               </Button>
               <Dialog open={passwordDialogOpen} onOpenChange={setPasswordDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button variant="outline">
+                  <Button variant="outline" className="w-full sm:w-auto">
                     <Lock className="mr-2 h-4 w-4" />
                     Change Password
                   </Button>

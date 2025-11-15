@@ -391,21 +391,21 @@ export default function AdminProductsPage() {
   ) : [];
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-24 pb-12">
+    <div className="min-h-screen bg-gray-50 pt-24 pb-20 md:pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center mb-8">
-          <div className="flex items-center">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+          <div className="flex items-center flex-wrap gap-2">
             <Link href="/admin">
-              <Button variant="ghost" size="sm" className="mr-4">
+              <Button variant="ghost" size="sm">
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Back
+                <span className="hidden sm:inline">Back</span>
               </Button>
             </Link>
-            <h1 className="text-3xl font-bold">Manage Products</h1>
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Manage Products</h1>
           </div>
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-green-600 hover:bg-green-700">
+              <Button className="bg-green-600 hover:bg-green-700 w-full sm:w-auto">
                 <Plus className="mr-2 h-4 w-4" />
                 Add Product
               </Button>

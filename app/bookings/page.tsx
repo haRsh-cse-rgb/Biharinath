@@ -64,12 +64,12 @@ export default function BookingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-24 pb-12">
+    <div className="min-h-screen bg-gray-50 pt-24 pb-20 md:pb-12">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold">My Bookings</h1>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold">My Bookings</h1>
           <Link href="/book-visit">
-            <Button className="bg-green-600 hover:bg-green-700">
+            <Button className="bg-green-600 hover:bg-green-700 w-full sm:w-auto">
               <Calendar className="mr-2 h-4 w-4" />
               Book a Visit
             </Button>
@@ -98,17 +98,19 @@ export default function BookingsPage() {
             {bookings.map((booking: any) => (
               <Card key={booking._id}>
                 <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <CardTitle className="flex items-center gap-2">
-                        <MapPin className="h-5 w-5 text-green-600" />
-                        Booking #{booking.bookingNumber}
+                  <div className="flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-0">
+                    <div className="flex-1 min-w-0">
+                      <CardTitle className="flex items-center gap-2 flex-wrap">
+                        <MapPin className="h-5 w-5 text-green-600 flex-shrink-0" />
+                        <span className="break-words">Booking #{booking.bookingNumber}</span>
                       </CardTitle>
                       <p className="text-sm text-gray-500 mt-1">
                         Booked on {new Date(booking.createdAt).toLocaleDateString('en-IN')}
                       </p>
                     </div>
-                    {getStatusBadge(booking.status)}
+                    <div className="flex-shrink-0">
+                      {getStatusBadge(booking.status)}
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent>

@@ -58,16 +58,16 @@ function AdminOrdersContent() {
   }, [searchTerm, allOrders]);
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-24 pb-12">
+    <div className="min-h-screen bg-gray-50 pt-24 pb-20 md:pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center mb-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mb-8">
           <Link href={userId ? "/admin/customers" : "/admin"}>
-            <Button variant="ghost" size="sm" className="mr-4">
+            <Button variant="ghost" size="sm">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back
             </Button>
           </Link>
-          <h1 className="text-3xl font-bold">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">
             {userId ? 'Customer Orders' : 'Manage Orders'}
           </h1>
         </div>
@@ -115,30 +115,32 @@ function AdminOrdersContent() {
             {orders.map((order: any) => (
               <Card key={order._id}>
                 <CardContent className="p-6">
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <h3 className="font-semibold">Order #{order.orderNumber}</h3>
-                      <p className="text-sm text-gray-600">{order.shippingAddress?.fullName || 'N/A'}</p>
-                      {order.userId?.email && (
-                        <p className="text-xs text-gray-500">{order.userId.email}</p>
-                      )}
-                      <p className="text-sm text-gray-500">
-                        {new Date(order.createdAt).toLocaleDateString('en-IN')}
-                      </p>
+                  <div className="flex flex-col gap-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-base sm:text-lg">Order #<span className="text-xs sm:text-sm font-normal">{order.orderNumber}</span></h3>
+                        <p className="text-sm text-gray-600">{order.shippingAddress?.fullName || 'N/A'}</p>
+                        {order.userId?.email && (
+                          <p className="text-xs text-gray-500 truncate">{order.userId.email}</p>
+                        )}
+                        <p className="text-sm text-gray-500">
+                          {new Date(order.createdAt).toLocaleDateString('en-IN')}
+                        </p>
+                      </div>
+                      <div className="text-left sm:text-right">
+                        <p className="font-bold text-lg">₹{order.totalAmount}</p>
+                        <Badge className="mt-1">{order.status}</Badge>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="font-bold text-lg">₹{order.totalAmount}</p>
-                      <Badge>{order.status}</Badge>
-                    </div>
-                    <div className="flex gap-2">
-                      <Link href={`/admin/orders/${order._id}`}>
-                        <Button variant="outline" size="sm">
+                    <div className="flex flex-wrap gap-2">
+                      <Link href={`/admin/orders/${order._id}`} className="flex-1 sm:flex-initial">
+                        <Button variant="outline" size="sm" className="w-full sm:w-auto">
                           <Eye className="mr-2 h-4 w-4" />
                           View Details
                         </Button>
                       </Link>
-                      <Link href={`/admin/orders/${order._id}/invoice`} target="_blank">
-                        <Button variant="outline" size="sm">
+                      <Link href={`/admin/orders/${order._id}/invoice`} target="_blank" className="flex-1 sm:flex-initial">
+                        <Button variant="outline" size="sm" className="w-full sm:w-auto">
                           Print Invoice
                         </Button>
                       </Link>

@@ -78,7 +78,7 @@ export default function AdminInvoicePage({ params }: { params: { id: string } })
               </div>
               <div className="text-right">
                 <p className="text-sm text-gray-500">Invoice #</p>
-                <p className="text-lg font-semibold">{order.orderNumber}</p>
+                <p className="text-xs sm:text-sm font-semibold break-words">{order.orderNumber}</p>
                 <p className="text-sm text-gray-500 mt-2">Date</p>
                 <p className="text-sm font-medium">{orderDate}</p>
                 <p className="text-sm text-gray-500 mt-2">Payment Status</p>

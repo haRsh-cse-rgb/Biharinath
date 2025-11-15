@@ -100,43 +100,45 @@ export default function OrdersPage() {
             {orders.map((order: any) => (
               <Card key={order._id}>
                 <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <CardTitle>Order #{order.orderNumber}</CardTitle>
+                  <div className="flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-0">
+                    <div className="flex-1 min-w-0">
+                      <CardTitle className="text-base sm:text-lg break-words">Order #<span className="text-xs sm:text-sm font-normal">{order.orderNumber}</span></CardTitle>
                       <p className="text-sm text-gray-500">
                         Placed on {new Date(order.createdAt).toLocaleDateString('en-IN')}
                       </p>
                     </div>
-                    <Badge className={
-                      order.status === 'delivered' ? 'bg-green-600' :
-                      order.status === 'shipped' ? 'bg-blue-600' :
-                      'bg-yellow-600'
-                    }>
-                      {order.status}
-                    </Badge>
+                    <div className="flex-shrink-0">
+                      <Badge className={
+                        order.status === 'delivered' ? 'bg-green-600' :
+                        order.status === 'shipped' ? 'bg-blue-600' :
+                        'bg-yellow-600'
+                      }>
+                        {order.status}
+                      </Badge>
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex justify-between items-center">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0">
                     <div>
                       <p className="font-semibold">₹{order.totalAmount}</p>
                       <p className="text-sm text-gray-600">{order.items?.length || 0} items</p>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2 w-full sm:w-auto">
                       {['pending', 'processing'].includes(order.status) && (
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => handleCancelOrder(order._id)}
                           disabled={cancelling === order._id}
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50 flex-1 sm:flex-initial"
                         >
                           <X className="h-4 w-4 mr-1" />
                           {cancelling === order._id ? 'Cancelling...' : 'Cancel'}
                         </Button>
                       )}
-                      <Link href={`/order-success?orderId=${encodeURIComponent(order._id)}`}>
-                        <Button variant="outline">View Details</Button>
+                      <Link href={`/order-success?orderId=${encodeURIComponent(order._id)}`} className="flex-1 sm:flex-initial">
+                        <Button variant="outline" className="w-full sm:w-auto">View Details</Button>
                       </Link>
                     </div>
                   </div>

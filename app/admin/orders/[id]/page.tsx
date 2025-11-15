@@ -36,16 +36,17 @@ export default function OrderDetailsPage({ params }: { params: { id: string } })
   }, [params.id]);
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-24 pb-12">
+    <div className="min-h-screen bg-gray-50 pt-24 pb-20 md:pb-12">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center mb-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mb-8">
           <Link href="/admin/orders">
-            <Button variant="ghost" size="sm" className="mr-4">
+            <Button variant="ghost" size="sm">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Orders
+              <span className="hidden sm:inline">Back to Orders</span>
+              <span className="sm:hidden">Back</span>
             </Button>
           </Link>
-          <h1 className="text-3xl font-bold">Order Details</h1>
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Order Details</h1>
         </div>
 
         {loading ? (
@@ -64,9 +65,9 @@ export default function OrderDetailsPage({ params }: { params: { id: string } })
           <div className="space-y-8">
             <Card>
               <CardHeader>
-                <CardTitle className="flex justify-between items-center">
-                  <span>Order #{order.orderNumber}</span>
-                  <Badge>{order.status}</Badge>
+                <CardTitle className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0">
+                  <span className="text-base sm:text-lg">Order #<span className="text-xs sm:text-sm font-normal">{order.orderNumber}</span></span>
+                  <Badge className="flex-shrink-0">{order.status}</Badge>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">

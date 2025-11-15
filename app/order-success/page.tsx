@@ -192,9 +192,9 @@ Thank you for shopping with us!
 
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle className="flex items-center justify-between">
+            <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
               <span>Order Details</span>
-              <span className="text-green-600 text-lg">#{order.orderNumber}</span>
+              <span className="text-green-600 text-xs sm:text-sm">#{order.orderNumber}</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
