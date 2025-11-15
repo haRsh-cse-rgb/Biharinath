@@ -75,12 +75,18 @@ export async function POST(request: Request) {
       { status: 201 }
     );
 
+    // Determine cookie settings for production
+    const isProduction = process.env.NODE_ENV === 'production';
+    
+    // Set cookie with appropriate settings
+    // In production: secure=true (HTTPS required), sameSite='lax'
+    // In development: secure=false, sameSite='lax'
     response.cookies.set('auth-token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 30, // 30 days instead of 7
-      path: '/', // Ensure cookie is available for all paths
+      secure: isProduction, // Always secure in production (assumes HTTPS)
+      sameSite: 'lax', // Works for same-site requests
+      maxAge: 60 * 60 * 24 * 30, // 30 days
+      path: '/', // Available for all paths
     });
 
     // Send welcome email (don't wait for it)

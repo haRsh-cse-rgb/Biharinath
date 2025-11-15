@@ -59,6 +59,7 @@ export async function POST(request: Request) {
       { expiresIn: '30d' } // Match cookie expiration
     );
 
+    // Create response first
     const response = NextResponse.json({
       user: {
         _id: user._id,
@@ -69,13 +70,32 @@ export async function POST(request: Request) {
       },
     });
 
+    // Determine cookie settings for production
+    // In production (Vercel, etc.), always use secure cookies with lax sameSite
+    const isProduction = process.env.NODE_ENV === 'production';
+    const forwardedProto = request.headers.get('x-forwarded-proto');
+    const url = new URL(request.url);
+    const isHTTPS = forwardedProto === 'https' || url.protocol === 'https:';
+    
+    // Set cookie with appropriate settings
+    // In production: secure=true (HTTPS required), sameSite='lax'
+    // In development: secure=false, sameSite='lax'
     response.cookies.set('auth-token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 30, // 30 days instead of 7
-      path: '/', // Ensure cookie is available for all paths
+      secure: isProduction, // Always secure in production (assumes HTTPS)
+      sameSite: 'lax', // Works for same-site requests
+      maxAge: 60 * 60 * 24 * 30, // 30 days
+      path: '/', // Available for all paths
     });
+    
+    if (isProduction) {
+      console.log('Login: Production cookie set', {
+        secure: true,
+        sameSite: 'lax',
+        forwardedProto,
+        protocol: url.protocol,
+      });
+    }
 
     console.log('Login: Success');
     return response;

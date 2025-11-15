@@ -32,17 +32,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const checkAuth = async () => {
     try {
       const response = await fetch('/api/auth/me', {
-        credentials: 'include', // Important: include cookies in the request
+        method: 'GET',
+        credentials: 'include', // Critical: include cookies in the request
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        cache: 'no-store', // Don't cache auth checks
       });
       
       if (!response.ok) {
-        throw new Error('Auth check failed');
+        console.error('Auth check failed:', response.status, response.statusText);
+        setUser(null);
+        return;
       }
       
       const data = await response.json();
+      console.log('Auth check result:', data.user ? 'User found' : 'No user');
       setUser(data.user || null);
-    } catch (error) {
-      console.error('Auth check error:', error);
+    } catch (error: any) {
+      console.error('Auth check error:', error.message);
       setUser(null);
     } finally {
       setLoading(false);
@@ -77,7 +85,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
-        credentials: 'include', // Important: include cookies in the request
+        credentials: 'include', // Critical: include cookies in the request
+        cache: 'no-store', // Don't cache login requests
       });
 
       const data = await response.json();
@@ -86,7 +95,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { error: data.error || 'Failed to sign in', errorType: data.errorType };
       }
 
+      // Set user immediately
       setUser(data.user);
+      
+      // Verify cookie was set by checking auth immediately
+      setTimeout(() => {
+        checkAuth();
+      }, 100);
+      
       return { error: null, errorType: null };
     } catch (error) {
       return { error: 'Failed to sign in', errorType: null };
