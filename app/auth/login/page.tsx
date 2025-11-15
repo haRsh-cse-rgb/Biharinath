@@ -11,7 +11,13 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useToast } from '@/hooks/use-toast';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
+  // Try to get email from localStorage for better UX
+  const [email, setEmail] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('lastLoginEmail') || '';
+    }
+    return '';
+  });
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const { signIn } = useAuth();
@@ -30,15 +36,23 @@ export default function LoginPage() {
         description: error || 'Failed to sign in',
         variant: 'destructive',
       });
+      setLoading(false);
     } else {
       toast({
         title: 'Success',
         description: 'Welcome back!',
       });
-      router.push('/');
+      // Save email to localStorage for next time
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('lastLoginEmail', email);
+      }
+      
+      // Wait a moment for the cookie to be set before navigating
+      setTimeout(() => {
+        router.push('/');
+        setLoading(false);
+      }, 200);
     }
-
-    setLoading(false);
   };
 
   return (

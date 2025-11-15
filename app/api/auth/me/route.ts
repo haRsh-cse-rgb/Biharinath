@@ -4,16 +4,26 @@ import jwt from 'jsonwebtoken';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
 
+// Force dynamic rendering - cookies() requires dynamic context
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 export async function GET(request: Request) {
   try {
     const cookieStore = cookies();
-    const allCookies = cookieStore.getAll();
-    const token = cookieStore.get('auth-token')?.value;
+    let token = cookieStore.get('auth-token')?.value;
+
+    // If no cookie token, check Authorization header (for localStorage fallback)
+    if (!token) {
+      const authHeader = request.headers.get('authorization');
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        token = authHeader.substring(7);
+      }
+    }
 
     // Debug logging in production
     if (process.env.NODE_ENV === 'production') {
-      console.log('Auth check: Cookies received:', allCookies.map(c => c.name));
-      console.log('Auth check: Token present:', !!token);
+      console.log('Auth check: Token present:', !!token, 'Source:', token ? (cookieStore.get('auth-token')?.value ? 'cookie' : 'header') : 'none');
     }
 
     if (!token) {

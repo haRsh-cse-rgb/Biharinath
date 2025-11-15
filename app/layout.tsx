@@ -8,6 +8,7 @@ import { PlatformWrapper } from '@/components/platform/PlatformWrapper';
 import { NavigationWrapper } from '@/components/layout/NavigationWrapper';
 import { SplashScreen } from '@/components/layout/SplashScreen';
 import { InstallPWA } from '@/components/layout/InstallPWA';
+import { PWAUpdatePrompt } from '@/components/layout/PWAUpdatePrompt';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -51,6 +52,7 @@ export default function RootLayout({
             </main>
             <Footer />
             <InstallPWA />
+            <PWAUpdatePrompt />
             <Toaster />
           </AuthProvider>
         </PlatformWrapper>

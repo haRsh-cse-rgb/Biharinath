@@ -6,10 +6,22 @@ import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import { sendOrderCancellationEmail } from '@/lib/email';
 
-export async function POST(_request: Request, { params }: { params: { id: string } }) {
+// Force dynamic rendering - cookies() requires dynamic context
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
+export async function POST(request: Request, { params }: { params: { id: string } }) {
   try {
     const cookieStore = cookies();
-    const token = cookieStore.get('auth-token')?.value;
+    let token = cookieStore.get('auth-token')?.value;
+
+    // If no cookie token, check Authorization header (for localStorage fallback)
+    if (!token) {
+      const authHeader = request.headers.get('authorization');
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        token = authHeader.substring(7);
+      }
+    }
 
     if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

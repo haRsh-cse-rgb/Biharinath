@@ -87,16 +87,16 @@ export default function AdminBookingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-24 pb-12">
+    <div className="min-h-screen bg-gray-50 pt-24 pb-20 md:pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center mb-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mb-8">
           <Link href="/admin">
-            <Button variant="ghost" size="sm" className="mr-4">
+            <Button variant="ghost" size="sm">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back
+              <span className="hidden sm:inline">Back</span>
             </Button>
           </Link>
-          <h1 className="text-3xl font-bold">Manage Bookings</h1>
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Manage Bookings</h1>
         </div>
 
         {loading ? (
@@ -115,11 +115,11 @@ export default function AdminBookingsPage() {
           <div className="space-y-4">
             {bookings.map((booking: any) => (
               <Card key={booking._id}>
-                <CardContent className="p-6">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="font-semibold">{booking.fullName}</h3>
-                      <p className="text-sm text-gray-600">{booking.email}</p>
+                <CardContent className="p-4 sm:p-6">
+                  <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-base sm:text-lg">{booking.fullName}</h3>
+                      <p className="text-sm text-gray-600 truncate">{booking.email}</p>
                       <p className="text-sm text-gray-600">{booking.phone}</p>
                       <p className="text-sm mt-2">
                         <span className="font-medium">Date:</span> {new Date(booking.preferredDate).toLocaleDateString()}
@@ -131,18 +131,18 @@ export default function AdminBookingsPage() {
                         <span className="font-medium">Guests:</span> {booking.numberOfGuests}
                       </p>
                       {booking.notes && (
-                        <p className="text-sm mt-2">
+                        <p className="text-sm mt-2 break-words">
                           <span className="font-medium">Notes:</span> {booking.notes}
                         </p>
                       )}
                     </div>
-                    <div className="flex flex-col items-end space-y-2">
-                      <Badge>{booking.status}</Badge>
+                    <div className="flex flex-col items-start sm:items-end space-y-2 w-full sm:w-auto flex-shrink-0">
+                      <Badge className="self-start sm:self-end">{booking.status}</Badge>
                       {booking.status === 'pending' && (
-                        <div className="flex space-x-2">
+                        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                           <Button 
                             size="sm" 
-                            className="bg-green-600 hover:bg-green-700"
+                            className="bg-green-600 hover:bg-green-700 w-full sm:w-auto"
                             onClick={() => handleApprove(booking._id)}
                             disabled={processingId === booking._id}
                           >
@@ -152,7 +152,7 @@ export default function AdminBookingsPage() {
                           <Button 
                             size="sm" 
                             variant="outline" 
-                            className="text-red-600"
+                            className="text-red-600 w-full sm:w-auto"
                             onClick={() => handleReject(booking._id)}
                             disabled={processingId === booking._id}
                           >
@@ -162,7 +162,7 @@ export default function AdminBookingsPage() {
                         </div>
                       )}
                       {booking.status === 'rejected' && booking.rejectionReason && (
-                        <div className="text-sm text-red-600 mt-2">
+                        <div className="text-sm text-red-600 mt-2 break-words max-w-full sm:max-w-xs">
                           <span className="font-medium">Reason:</span> {booking.rejectionReason}
                         </div>
                       )}

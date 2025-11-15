@@ -22,11 +22,29 @@ export async function GET() {
       .populate('userId', 'fullName email')
       .lean();
 
+    // Fetch pending bookings
     const pendingBookings = await Booking.find({ status: 'pending' })
       .sort({ preferredDate: 1 })
       .limit(5)
       .populate('userId', 'fullName email')
       .lean();
+    
+    console.log('Admin Stats: Found pending bookings:', pendingBookings.length);
+    
+    // Convert to plain objects and ensure user data is available
+    const bookingsData = pendingBookings.map((booking: any) => {
+      return {
+        ...booking,
+        // Ensure we have fullName and email from either populated user or booking itself
+        fullName: booking.userId?.fullName || booking.fullName,
+        email: booking.userId?.email || booking.email,
+        // Keep the user object for compatibility
+        user: booking.userId ? {
+          fullName: booking.userId.fullName,
+          email: booking.userId.email,
+        } : undefined,
+      };
+    });
 
     return NextResponse.json({
       stats: {
@@ -36,7 +54,7 @@ export async function GET() {
         bookings: bookingsCount,
       },
       recentOrders,
-      pendingBookings,
+      pendingBookings: bookingsData,
     });
   } catch (error: any) {
     console.error('Error fetching admin stats:', error);

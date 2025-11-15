@@ -6,6 +6,10 @@ import jwt from 'jsonwebtoken';
 import User from '@/models/User';
 import { sendBookingConfirmationEmail } from '@/lib/email';
 
+// Force dynamic rendering - cookies() requires dynamic context
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 export async function GET(request: Request) {
   try {
     await connectDB();
@@ -27,7 +31,16 @@ export async function GET(request: Request) {
     else {
       try {
         const cookieStore = cookies();
-        const token = cookieStore.get('auth-token')?.value;
+        let token = cookieStore.get('auth-token')?.value;
+
+        // If no cookie token, check Authorization header (for localStorage fallback)
+        if (!token) {
+          const authHeader = request.headers.get('authorization');
+          if (authHeader && authHeader.startsWith('Bearer ')) {
+            token = authHeader.substring(7);
+          }
+        }
+
         if (token) {
           const decoded: any = jwt.verify(token, process.env.JWT_SECRET!);
           const user = await User.findById(decoded.userId);

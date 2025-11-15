@@ -5,6 +5,10 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { sendWelcomeEmail } from '@/lib/email';
 
+// Force dynamic rendering - cookies() requires dynamic context
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 export async function POST(request: Request) {
   try {
     console.log('Signup: Starting...');
@@ -62,6 +66,7 @@ export async function POST(request: Request) {
       { expiresIn: '30d' } // Match cookie expiration
     );
 
+    // Include token in response for localStorage fallback
     const response = NextResponse.json(
       {
         user: {
@@ -71,23 +76,39 @@ export async function POST(request: Request) {
           phone: user.phone || '',
           role: user.role,
         },
+        token: token, // Include token for localStorage fallback
       },
       { status: 201 }
     );
 
-    // Determine cookie settings for production
+    // Determine cookie settings - check for HTTPS properly
     const isProduction = process.env.NODE_ENV === 'production';
+    const forwardedProto = request.headers.get('x-forwarded-proto');
+    const origin = request.headers.get('origin');
+    const url = new URL(request.url);
     
-    // Set cookie with appropriate settings
-    // In production: secure=true (HTTPS required), sameSite='lax'
-    // In development: secure=false, sameSite='lax'
-    response.cookies.set('auth-token', token, {
-      httpOnly: true,
-      secure: isProduction, // Always secure in production (assumes HTTPS)
-      sameSite: 'lax', // Works for same-site requests
-      maxAge: 60 * 60 * 24 * 30, // 30 days
-      path: '/', // Available for all paths
-    });
+    // Check if request is over HTTPS
+    const isHTTPS = 
+      forwardedProto === 'https' || 
+      url.protocol === 'https:' ||
+      (origin && origin.startsWith('https://'));
+    
+    // In production, use secure cookies only if HTTPS is confirmed
+    // Ensure it's always a boolean, not null or empty string
+    const useSecure: boolean = Boolean(isProduction && isHTTPS);
+    
+    // Set cookie with proper settings
+    try {
+      response.cookies.set('auth-token', token, {
+        httpOnly: true,
+        secure: useSecure,
+        sameSite: 'lax',
+        maxAge: 60 * 60 * 24 * 30, // 30 days
+        path: '/',
+      });
+    } catch (error) {
+      console.error('Failed to set cookie:', error);
+    }
 
     // Send welcome email (don't wait for it)
     sendWelcomeEmail(user.email, user.fullName).catch(err => 

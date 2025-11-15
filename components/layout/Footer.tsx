@@ -22,13 +22,13 @@ export function Footer() {
               Pure organic produce grown with love, delivered fresh from our farm to your home.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="hover:text-white transition-colors">
+              {/* <a href="#" className="hover:text-white transition-colors">
                 <Facebook className="h-5 w-5" />
               </a>
               <a href="#" className="hover:text-white transition-colors">
                 <Twitter className="h-5 w-5" />
-              </a>
-              <a href="#" className="hover:text-white transition-colors">
+              </a> */}
+              <a href="https://www.instagram.com/organicfarming_biharinath?igsh=MWEwbXA5aTJmY28waA==" className="hover:text-white transition-colors">
                 <Instagram className="h-5 w-5" />
               </a>
             </div>
@@ -91,15 +91,15 @@ export function Footer() {
             <ul className="space-y-3 text-sm">
               <li className="flex items-start space-x-2">
                 <MapPin className="h-5 w-5 flex-shrink-0 mt-0.5" />
-                <span>Biharinath Village, Bihar, India</span>
+                <span>Biharinath Organic Farms, Asansol, West Bengal, India</span>
               </li>
               <li className="flex items-center space-x-2">
                 <Phone className="h-5 w-5 flex-shrink-0" />
-                <span>+91 98765 43210</span>
+                <span>+91 9733448048</span>
               </li>
               <li className="flex items-center space-x-2">
                 <Mail className="h-5 w-5 flex-shrink-0" />
-                <span>info@biharinathorganicfarm.com</span>
+                <span>biharinath.org.farm@gmail.com</span>
               </li>
             </ul>
           </div>
