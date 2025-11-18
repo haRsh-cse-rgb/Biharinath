@@ -28,28 +28,28 @@ function getAuthToken(request: Request) {
   return token;
 }
 
-async function requireAdmin(request: Request) {
+function ensureAdmin(request: Request): DecodedToken | NextResponse {
   const token = getAuthToken(request);
 
   if (!token) {
-    return { error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) };
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as DecodedToken;
     if (decoded.role !== 'admin') {
-      return { error: NextResponse.json({ error: 'Forbidden' }, { status: 403 }) };
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
-    return { decoded };
+    return decoded;
   } catch (error) {
     console.error('Admin reviews auth error:', error);
-    return { error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) };
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 }
 
 export async function GET(request: Request) {
-  const auth = await requireAdmin(request);
-  if ('error' in auth) return auth.error;
+  const auth = ensureAdmin(request);
+  if (auth instanceof NextResponse) return auth;
 
   try {
     await connectDB();
@@ -76,8 +76,8 @@ export async function GET(request: Request) {
 }
 
 export async function PATCH(request: Request) {
-  const auth = await requireAdmin(request);
-  if ('error' in auth) return auth.error;
+  const auth = ensureAdmin(request);
+  if (auth instanceof NextResponse) return auth;
 
   try {
     await connectDB();
@@ -117,8 +117,8 @@ export async function PATCH(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  const auth = await requireAdmin(request);
-  if ('error' in auth) return auth.error;
+  const auth = ensureAdmin(request);
+  if (auth instanceof NextResponse) return auth;
 
   try {
     await connectDB();
