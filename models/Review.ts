@@ -8,7 +8,7 @@ const ReviewSchema = new mongoose.Schema({
   comment: { type: String, required: true },
   images: [String],
   isVerifiedPurchase: { type: Boolean, default: false },
-  isApproved: { type: Boolean, default: true }, // Auto-approve reviews
+  isApproved: { type: Boolean, default: false },
 }, { timestamps: true });
 
 let Review: any;

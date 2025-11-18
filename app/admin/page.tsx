@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Package, ShoppingCart, Users, Calendar, Database } from 'lucide-react';
+import { Package, ShoppingCart, Users, Calendar, Database, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 
@@ -12,6 +12,7 @@ interface Stats {
   orders: number;
   customers: number;
   bookings: number;
+  pendingReviews: number;
 }
 
 interface Order {
@@ -42,6 +43,7 @@ export default function AdminDashboard() {
     orders: 0,
     customers: 0,
     bookings: 0,
+    pendingReviews: 0,
   });
   const [recentOrders, setRecentOrders] = useState<Order[]>([]);
   const [pendingBookings, setPendingBookings] = useState<Booking[]>([]);
@@ -70,7 +72,8 @@ export default function AdminDashboard() {
     { title: 'Total Products', value: stats.products, icon: Package, href: '/admin/products', color: 'bg-blue-500' },
     { title: 'Total Orders', value: stats.orders, icon: ShoppingCart, href: '/admin/orders', color: 'bg-green-500' },
     { title: 'Customers', value: stats.customers, icon: Users, href: '/admin/customers', color: 'bg-purple-500' },
-    { title: 'Bookings', value: stats.bookings, icon: Calendar, href: '/admin/bookings', color: 'bg-orange-500' }
+    { title: 'Bookings', value: stats.bookings, icon: Calendar, href: '/admin/bookings', color: 'bg-orange-500' },
+    { title: 'Pending Reviews', value: stats.pendingReviews, icon: MessageSquare, href: '/admin/reviews', color: 'bg-pink-500' },
   ];
 
   const handleSeedDatabase = async () => {

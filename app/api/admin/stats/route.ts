@@ -4,16 +4,18 @@ import Product from '@/models/Product';
 import Order from '@/models/Order';
 import User from '@/models/User';
 import Booking from '@/models/Booking';
+import Review from '@/models/Review';
 
 export async function GET() {
   try {
     await dbConnect();
 
-    const [productsCount, ordersCount, usersCount, bookingsCount] = await Promise.all([
+    const [productsCount, ordersCount, usersCount, bookingsCount, pendingReviewsCount] = await Promise.all([
       Product.countDocuments(),
       Order.countDocuments(),
       User.countDocuments(),
       Booking.countDocuments(),
+      Review.countDocuments({ isApproved: false }),
     ]);
 
     const recentOrders = await Order.find()
@@ -52,6 +54,7 @@ export async function GET() {
         orders: ordersCount,
         customers: usersCount,
         bookings: bookingsCount,
+        pendingReviews: pendingReviewsCount,
       },
       recentOrders,
       pendingBookings: bookingsData,

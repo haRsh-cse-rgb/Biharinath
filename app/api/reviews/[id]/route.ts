@@ -61,6 +61,9 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     }
     if (images !== undefined) review.images = images || [];
 
+    // Any update should trigger re-approval
+    review.isApproved = false;
+
     await review.save();
 
     const populatedReview = await Review.findById(review._id)

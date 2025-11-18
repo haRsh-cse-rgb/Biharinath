@@ -31,6 +31,7 @@ interface Review {
   comment: string;
   images?: string[];
   createdAt: string;
+  isApproved: boolean;
 }
 
 interface ProductReviewsProps {
@@ -41,7 +42,7 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [reviews, setReviews] = useState<Review[]>([]);
-  const [allReviews, setAllReviews] = useState<Review[]>([]); // Store all reviews for stats
+  const [allReviews, setAllReviews] = useState<Review[]>([]); // Approved reviews for stats
   const [loading, setLoading] = useState(true);
   const [showAll, setShowAll] = useState(false);
   const [selectedRating, setSelectedRating] = useState<number | null>(null);
@@ -63,35 +64,8 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
   const [previewImages, setPreviewImages] = useState<string[]>([]);
 
   useEffect(() => {
-    fetchAllReviews();
-  }, [productId, user?._id]);
-
-  useEffect(() => {
     fetchReviews();
   }, [productId, selectedRating, user?._id]);
-
-  const fetchAllReviews = async () => {
-    try {
-      const res = await fetch(`/api/reviews?productId=${productId}`);
-      if (res.ok) {
-        const data = await res.json();
-        // Sort reviews: user's own review first, then by date (newest first)
-        const sorted = (data || []).sort((a: Review, b: Review) => {
-          const aIsOwn = user && a.userId?._id?.toString() === user._id?.toString();
-          const bIsOwn = user && b.userId?._id?.toString() === user._id?.toString();
-          
-          if (aIsOwn && !bIsOwn) return -1;
-          if (!aIsOwn && bIsOwn) return 1;
-          
-          // If both are own or both are not, sort by date (newest first)
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-        });
-        setAllReviews(sorted);
-      }
-    } catch (error) {
-      console.error('Failed to fetch all reviews:', error);
-    }
-  };
 
   const fetchReviews = async () => {
     try {
@@ -114,6 +88,8 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
           return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
         });
         setReviews(sorted);
+        const approvedOnly = (data || []).filter((review: Review) => review.isApproved);
+        setAllReviews(approvedOnly);
       }
     } catch (error) {
       console.error('Failed to fetch reviews:', error);
@@ -232,11 +208,13 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
       });
 
       if (res.ok) {
-        toast({ title: 'Review submitted successfully!' });
+        toast({
+          title: 'Review submitted!',
+          description: 'It will be visible once approved by admin.',
+        });
         setIsReviewDialogOpen(false);
         setReviewForm({ rating: 0, title: '', comment: '', images: [] });
         setPreviewImages([]);
-        fetchAllReviews();
         fetchReviews();
       } else {
         const errorData = await res.json();
@@ -306,12 +284,14 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
       });
 
       if (res.ok) {
-        toast({ title: 'Review updated successfully!' });
+        toast({
+          title: 'Review updated!',
+          description: 'Changes will be visible once approved.',
+        });
         setIsEditDialogOpen(false);
         setEditingReview(null);
         setReviewForm({ rating: 0, title: '', comment: '', images: [] });
         setPreviewImages([]);
-        fetchAllReviews();
         fetchReviews();
       } else {
         const errorData = await res.json();
@@ -345,7 +325,6 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
 
       if (res.ok) {
         toast({ title: 'Review deleted successfully!' });
-        fetchAllReviews();
         fetchReviews();
       } else {
         const errorData = await res.json();
@@ -638,6 +617,11 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
                           })}
                         </p>
                       </div>
+                      {(!review.isApproved) && (
+                        <Badge className="bg-yellow-100 text-yellow-700 border border-yellow-200">
+                          Pending admin approval
+                        </Badge>
+                      )}
                       {isOwnReview && (
                         <div className="flex items-center gap-2 ml-4">
                           <Button
